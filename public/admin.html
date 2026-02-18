@@ -1,0 +1,1207 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة تحكم المشرف - مسابقة رمضان</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --gold: #c9a84c;
+        --gold-light: #f0d080;
+        --deep: #0a0f1e;
+        --deep2: #111827;
+        --card: #161d2f;
+        --card2: #1e2740;
+        --green: #2ecc71;
+        --red: #e74c3c;
+        --blue: #3498db;
+        --text: #f0e6d3;
+        --muted: #8892a4;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Cairo", sans-serif;
+        background: var(--deep);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* Login */
+      .login-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .login-box {
+        background: var(--card);
+        border: 1px solid rgba(201, 168, 76, 0.2);
+        border-radius: 20px;
+        padding: 40px;
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+      }
+      .login-box h2 {
+        color: var(--gold);
+        margin-bottom: 24px;
+        font-size: 1.5rem;
+      }
+
+      /* Layout */
+      .layout {
+        display: flex;
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 240px;
+        background: var(--card);
+        border-left: 1px solid rgba(201, 168, 76, 0.1);
+        padding: 20px 0;
+        flex-shrink: 0;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        left: 0;
+        top: 0;
+      }
+      .sidebar-logo {
+        text-align: center;
+        padding: 16px 20px 24px;
+        border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+        margin-bottom: 16px;
+      }
+      .sidebar-logo .moon {
+        font-size: 2rem;
+      }
+      .sidebar-logo h3 {
+        font-size: 0.9rem;
+        color: var(--gold);
+        margin-top: 6px;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        color: var(--muted);
+        margin: 2px 8px;
+        border-radius: 10px;
+      }
+      .nav-item:hover {
+        background: var(--card2);
+        color: var(--text);
+      }
+      .nav-item.active {
+        background: rgba(201, 168, 76, 0.15);
+        color: var(--gold);
+      }
+      .nav-icon {
+        font-size: 1.1rem;
+      }
+
+      .main {
+        margin-right: 240px;
+        padding: 24px;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+
+      /* Stats cards */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .stat-card {
+        background: var(--card);
+        border: 1px solid rgba(201, 168, 76, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+      }
+      .stat-card .val {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gold);
+      }
+      .stat-card .lbl {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      /* Table */
+      .table-wrap {
+        background: var(--card);
+        border: 1px solid rgba(201, 168, 76, 0.1);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .table-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .table-header h3 {
+        color: var(--gold);
+        font-size: 1rem;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        padding: 12px 16px;
+        text-align: right;
+        font-size: 0.8rem;
+        color: var(--muted);
+        background: var(--card2);
+        border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+      }
+      td {
+        padding: 12px 16px;
+        font-size: 0.85rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      tr:hover td {
+        background: rgba(201, 168, 76, 0.03);
+      }
+
+      /* Medal */
+      .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .rank-1 {
+        background: linear-gradient(135deg, #ffd700, #ffa500);
+        color: #000;
+      }
+      .rank-2 {
+        background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+        color: #000;
+      }
+      .rank-3 {
+        background: linear-gradient(135deg, #cd7f32, #8b4513);
+        color: #fff;
+      }
+      .rank-other {
+        background: var(--card2);
+        color: var(--muted);
+      }
+
+      .points-badge {
+        display: inline-block;
+        padding: 3px 12px;
+        background: rgba(201, 168, 76, 0.15);
+        color: var(--gold);
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+
+      /* Form */
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 11px 14px;
+        background: var(--card2);
+        border: 1px solid rgba(201, 168, 76, 0.2);
+        border-radius: 10px;
+        color: var(--text);
+        font-family: "Cairo", sans-serif;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.2s;
+        text-align: right;
+        direction: rtl;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: var(--gold);
+      }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+      select option {
+        background: var(--card2);
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        font-family: "Cairo", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-gold {
+        background: linear-gradient(135deg, #c9a84c, #f0d080);
+        color: var(--deep);
+      }
+      .btn-gold:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+      .btn-danger {
+        background: rgba(231, 76, 60, 0.2);
+        color: var(--red);
+        border: 1px solid rgba(231, 76, 60, 0.3);
+      }
+      .btn-danger:hover {
+        background: rgba(231, 76, 60, 0.3);
+      }
+      .btn-blue {
+        background: rgba(52, 152, 219, 0.2);
+        color: var(--blue);
+        border: 1px solid rgba(52, 152, 219, 0.3);
+      }
+      .btn-sm {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+      }
+      .btn-outline {
+        background: transparent;
+        border: 1px dashed rgba(201, 168, 76, 0.4);
+        color: var(--gold);
+      }
+      .btn-outline:hover {
+        background: rgba(201, 168, 76, 0.1);
+      }
+
+      .day-tabs {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .day-tab {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        background: var(--card2);
+        color: var(--muted);
+        border: 1px solid transparent;
+        transition: all 0.2s;
+      }
+      .day-tab.active {
+        background: rgba(201, 168, 76, 0.15);
+        color: var(--gold);
+        border-color: rgba(201, 168, 76, 0.3);
+      }
+      .day-tab:hover {
+        color: var(--text);
+      }
+
+      .section-card {
+        background: var(--card);
+        border: 1px solid rgba(201, 168, 76, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .section-title {
+        color: var(--gold);
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+
+      .correct-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .cat-quran {
+        background: rgba(46, 204, 113, 0.15);
+        color: var(--green);
+      }
+      .cat-ramadan {
+        background: rgba(201, 168, 76, 0.15);
+        color: var(--gold);
+      }
+      .cat-general {
+        background: rgba(52, 152, 219, 0.15);
+        color: var(--blue);
+      }
+
+      .type-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-right: 6px;
+      }
+      .type-mcq {
+        background: rgba(52, 152, 219, 0.15);
+        color: var(--blue);
+      }
+      .type-tf {
+        background: rgba(155, 89, 182, 0.15);
+        color: #9b59b6;
+      }
+      .type-fb {
+        background: rgba(230, 126, 34, 0.15);
+        color: #e67e22;
+      }
+
+      .settings-row {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+      }
+      .settings-row .form-group {
+        flex: 1;
+        margin: 0;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--muted);
+      }
+      .empty-state .icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+      }
+
+      /* Dynamic options */
+      .option-entry {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .option-entry input {
+        flex: 1;
+      }
+      .option-entry .remove-opt {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid rgba(231, 76, 60, 0.3);
+        background: rgba(231, 76, 60, 0.1);
+        color: var(--red);
+        cursor: pointer;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.2s;
+      }
+      .option-entry .remove-opt:hover {
+        background: rgba(231, 76, 60, 0.25);
+      }
+      .option-entry .opt-radio {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--gold);
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(201, 168, 76, 0.2);
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN -->
+    <div id="loginWrap" class="login-wrap">
+      <div class="login-box">
+        <div style="font-size: 3rem">🌙</div>
+        <h2>لوحة تحكم المشرف</h2>
+        <div class="form-group">
+          <label>كلمة المرور</label>
+          <input
+            type="password"
+            id="adminPass"
+            placeholder="أدخل كلمة مرور المشرف"
+            onkeydown="if (event.key === 'Enter') doLogin();"
+          />
+        </div>
+        <button class="btn btn-gold" style="width: 100%" onclick="doLogin()">
+          دخول
+        </button>
+        <p
+          id="loginErr"
+          style="
+            color: var(--red);
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: none;
+          "
+        >
+          كلمة مرور خاطئة
+        </p>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" style="display: none">
+      <div class="layout">
+        <div class="sidebar">
+          <div class="sidebar-logo">
+            <div class="moon">🌙</div>
+            <h3>مسابقة رمضان</h3>
+          </div>
+          <div class="nav-item active" onclick="showPage('overview')">
+            <span class="nav-icon">📊</span> نظرة عامة
+          </div>
+          <div class="nav-item" onclick="showPage('questions')">
+            <span class="nav-icon">❓</span> إدارة الأسئلة
+          </div>
+          <div class="nav-item" onclick="showPage('leaderboard')">
+            <span class="nav-icon">🏆</span> المتصدرون
+          </div>
+          <div class="nav-item" onclick="showPage('participants')">
+            <span class="nav-icon">👥</span> المشاركون
+          </div>
+          <div class="nav-item" onclick="showPage('settings')">
+            <span class="nav-icon">⚙️</span> الإعدادات
+          </div>
+          <div class="nav-item" onclick="exportData()" style="margin-top: auto">
+            <span class="nav-icon">📥</span> تصدير البيانات
+          </div>
+        </div>
+
+        <div class="main">
+          <!-- Overview -->
+          <div id="page-overview" class="page active">
+            <h2 style="color: var(--gold); margin-bottom: 20px">
+              نظرة عامة 📊
+            </h2>
+            <div class="stats-grid" id="statsGrid">
+              <div class="stat-card">
+                <div class="val" id="st-participants">-</div>
+                <div class="lbl">إجمالي المشاركين</div>
+              </div>
+              <div class="stat-card">
+                <div class="val" id="st-today">-</div>
+                <div class="lbl">مشاركو اليوم</div>
+              </div>
+              <div class="stat-card">
+                <div class="val" id="st-answers">-</div>
+                <div class="lbl">إجمالي الإجابات</div>
+              </div>
+              <div class="stat-card">
+                <div class="val" id="st-accuracy">-</div>
+                <div class="lbl">نسبة الإجابات الصحيحة</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <div class="table-header"><h3>🏆 أفضل ١٠ مشاركين</h3></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>الاسم</th>
+                    <th>النقاط</th>
+                    <th>تاريخ التسجيل</th>
+                  </tr>
+                </thead>
+                <tbody id="topTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Questions -->
+          <div id="page-questions" class="page">
+            <h2 style="color: var(--gold); margin-bottom: 20px">
+              إدارة الأسئلة ❓
+            </h2>
+
+            <div class="section-card">
+              <div class="section-title">إضافة سؤال جديد</div>
+              <div class="form-row">
+                <div class="form-group" style="margin: 0">
+                  <label>نوع السؤال</label>
+                  <select id="qType" onchange="onQuestionTypeChange()">
+                    <option value="multiple_choice">📝 اختيار من متعدد</option>
+                    <option value="true_false">✅ صح أو خطأ</option>
+                    <option value="fill_blank">✏️ أكمل الفراغ</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin: 0">
+                  <label>اليوم</label>
+                  <select id="qDay"></select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="margin: 0">
+                  <label>التصنيف</label>
+                  <select id="qCat">
+                    <option value="quran">📖 قرآن كريم</option>
+                    <option value="ramadan">🌙 رمضان</option>
+                    <option value="general">☪️ عام</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin: 0">
+                  <label>الترتيب</label>
+                  <input type="number" id="qOrder" value="1" min="1" max="10" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>نص السؤال</label>
+                <textarea
+                  id="qText"
+                  placeholder="اكتب السؤال هنا..."
+                ></textarea>
+              </div>
+
+              <!-- MCQ Options (dynamic) -->
+              <div id="mcqSection">
+                <label
+                  >الخيارات
+                  <span style="color: var(--muted); font-weight: 400"
+                    >(حدد الإجابة الصحيحة بالضغط على الدائرة)</span
+                  ></label
+                >
+                <div id="optionsContainer"></div>
+                <button
+                  class="btn btn-outline btn-sm"
+                  onclick="addOptionField()"
+                  style="margin-top: 8px"
+                  id="addOptBtn"
+                >
+                  ➕ إضافة خيار
+                </button>
+              </div>
+
+              <!-- True/False Section -->
+              <div id="tfSection" style="display: none">
+                <div class="form-group">
+                  <label>الإجابة الصحيحة</label>
+                  <select id="tfCorrect">
+                    <option value="0">✅ صح</option>
+                    <option value="1">❌ خطأ</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Fill Blank Section -->
+              <div id="fbSection" style="display: none">
+                <div class="form-group">
+                  <label>الإجابة الصحيحة</label>
+                  <input
+                    type="text"
+                    id="fbCorrect"
+                    placeholder="أدخل الإجابة الصحيحة هنا..."
+                  />
+                </div>
+              </div>
+
+              <button
+                class="btn btn-gold"
+                onclick="addQuestion()"
+                style="margin-top: 12px"
+              >
+                ➕ إضافة السؤال
+              </button>
+            </div>
+
+            <div class="section-card">
+              <div class="section-title">عرض أسئلة اليوم</div>
+              <div class="day-tabs" id="dayTabsQ"></div>
+              <div id="questionsList"></div>
+            </div>
+          </div>
+
+          <!-- Leaderboard -->
+          <div id="page-leaderboard" class="page">
+            <h2 style="color: var(--gold); margin-bottom: 20px">
+              المتصدرون 🏆
+            </h2>
+            <div class="table-wrap">
+              <div class="table-header">
+                <h3>ترتيب المشاركين</h3>
+                <button class="btn btn-blue btn-sm" onclick="loadLeaderboard()">
+                  🔄 تحديث
+                </button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>الاسم</th>
+                    <th>رقم الجوال</th>
+                    <th>النقاط</th>
+                    <th>الأسئلة</th>
+                    <th>تاريخ التسجيل</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Participants -->
+          <div id="page-participants" class="page">
+            <h2 style="color: var(--gold); margin-bottom: 20px">
+              المشاركون 👥
+            </h2>
+            <div class="table-wrap">
+              <div class="table-header">
+                <h3 id="participantsCount">المشاركون</h3>
+                <button
+                  class="btn btn-blue btn-sm"
+                  onclick="loadParticipants()"
+                >
+                  🔄 تحديث
+                </button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>الاسم</th>
+                    <th>رقم الجوال</th>
+                    <th>تاريخ التسجيل</th>
+                  </tr>
+                </thead>
+                <tbody id="participantsTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Settings -->
+          <div id="page-settings" class="page">
+            <h2 style="color: var(--gold); margin-bottom: 20px">
+              الإعدادات ⚙️
+            </h2>
+            <div class="section-card">
+              <div class="section-title">إعدادات المسابقة</div>
+              <div class="settings-row">
+                <div class="form-group">
+                  <label>وقت فتح المسابقة يومياً</label>
+                  <input type="time" id="settOpenTime" value="21:00" />
+                </div>
+                <div class="form-group">
+                  <label>اليوم الحالي من رمضان</label>
+                  <select id="settDay"></select>
+                </div>
+                <button
+                  class="btn btn-gold"
+                  onclick="saveSettings()"
+                  style="flex-shrink: 0"
+                >
+                  حفظ الإعدادات
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API = "/api";
+      let ADMIN_TOKEN = "";
+      let selectedQDay = 1;
+      let optionCount = 0;
+
+      // Populate day selects
+      function populateDaySelects() {
+        ["qDay", "settDay"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.innerHTML = "";
+          for (let i = 1; i <= 30; i++) {
+            el.innerHTML += `<option value="${i}">اليوم ${i}</option>`;
+          }
+        });
+      }
+      populateDaySelects();
+
+      function doLogin() {
+        const pass = document.getElementById("adminPass").value;
+        ADMIN_TOKEN = pass;
+        fetch(`${API}/admin/stats`, { headers: { "X-Admin-Token": pass } })
+          .then((r) => {
+            if (r.ok) {
+              document.getElementById("loginWrap").style.display = "none";
+              document.getElementById("dashboard").style.display = "block";
+              initDashboard();
+            } else {
+              document.getElementById("loginErr").style.display = "block";
+            }
+          })
+          .catch(() => {
+            document.getElementById("loginErr").style.display = "block";
+          });
+      }
+
+      function adminHeaders() {
+        return {
+          "Content-Type": "application/json",
+          "X-Admin-Token": ADMIN_TOKEN,
+        };
+      }
+
+      function showPage(name) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        document.getElementById(`page-${name}`).classList.add("active");
+        event.currentTarget.classList.add("active");
+
+        if (name === "overview") loadStats();
+        if (name === "leaderboard") loadLeaderboard();
+        if (name === "participants") loadParticipants();
+        if (name === "questions") initQuestionDays();
+      }
+
+      function initDashboard() {
+        loadStats();
+        initQuestionDays();
+        resetQuestionForm();
+      }
+
+      // --- Question Type UI ---
+      function onQuestionTypeChange() {
+        const type = document.getElementById("qType").value;
+        document.getElementById("mcqSection").style.display =
+          type === "multiple_choice" ? "" : "none";
+        document.getElementById("tfSection").style.display =
+          type === "true_false" ? "" : "none";
+        document.getElementById("fbSection").style.display =
+          type === "fill_blank" ? "" : "none";
+        if (type === "multiple_choice") {
+          resetMCQOptions();
+        }
+      }
+
+      function resetMCQOptions() {
+        const container = document.getElementById("optionsContainer");
+        container.innerHTML = "";
+        optionCount = 0;
+        // Start with 2 options
+        addOptionField();
+        addOptionField();
+      }
+
+      function addOptionField(value = "") {
+        const container = document.getElementById("optionsContainer");
+        const count = container.querySelectorAll(".option-entry").length;
+        if (count >= 6) {
+          alert("الحد الأقصى 6 خيارات");
+          return;
+        }
+
+        const idx = optionCount++;
+        const div = document.createElement("div");
+        div.className = "option-entry";
+        div.innerHTML = `
+    <input type="radio" name="correctOpt" value="${idx}" class="opt-radio" ${count === 0 ? "checked" : ""} />
+    <input type="text" class="opt-input" placeholder="الخيار ${count + 1}" value="${value}" />
+    <button class="remove-opt" onclick="removeOptionField(this)" title="حذف">✕</button>
+  `;
+        container.appendChild(div);
+        updateAddButton();
+      }
+
+      function removeOptionField(btn) {
+        const container = document.getElementById("optionsContainer");
+        const entries = container.querySelectorAll(".option-entry");
+        if (entries.length <= 2) {
+          alert("يجب أن يكون هناك خياران على الأقل");
+          return;
+        }
+
+        const entry = btn.closest(".option-entry");
+        const wasChecked = entry.querySelector(".opt-radio").checked;
+        entry.remove();
+
+        // Reindex radios and check first if removed was checked
+        const remaining = container.querySelectorAll(".option-entry");
+        remaining.forEach((el, i) => {
+          el.querySelector(".opt-radio").value = i;
+          el.querySelector(".opt-input").placeholder = `الخيار ${i + 1}`;
+        });
+        if (wasChecked && remaining.length > 0) {
+          remaining[0].querySelector(".opt-radio").checked = true;
+        }
+        updateAddButton();
+      }
+
+      function updateAddButton() {
+        const count = document
+          .getElementById("optionsContainer")
+          .querySelectorAll(".option-entry").length;
+        document.getElementById("addOptBtn").style.display =
+          count >= 6 ? "none" : "";
+      }
+
+      function resetQuestionForm() {
+        document.getElementById("qType").value = "multiple_choice";
+        document.getElementById("qText").value = "";
+        document.getElementById("qOrder").value = "1";
+        document.getElementById("fbCorrect").value = "";
+        document.getElementById("tfCorrect").value = "0";
+        onQuestionTypeChange();
+      }
+
+      // --- Stats ---
+      async function loadStats() {
+        const r = await fetch(`${API}/admin/stats`, {
+          headers: adminHeaders(),
+        });
+        const d = await r.json();
+        document.getElementById("st-participants").textContent =
+          d.total_participants;
+        document.getElementById("st-today").textContent = d.today_participants;
+        document.getElementById("st-answers").textContent = d.total_answers;
+        document.getElementById("st-accuracy").textContent =
+          d.accuracy_rate + "%";
+
+        const lb = await fetch(`${API}/admin/leaderboard`, {
+          headers: adminHeaders(),
+        });
+        const data = await lb.json();
+        const top10 = data.slice(0, 10);
+        document.getElementById("topTable").innerHTML =
+          top10
+            .map(
+              (p, i) => `
+    <tr>
+      <td><span class="rank-badge rank-${i < 3 ? i + 1 : "other"}">${i + 1}</span></td>
+      <td>${p.name}</td>
+      <td><span class="points-badge">${p.points || 0} نقطة</span></td>
+      <td style="color:var(--muted);font-size:0.8rem">${p.created_at?.split("T")[0] || "-"}</td>
+    </tr>
+  `,
+            )
+            .join("") ||
+          '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">لا يوجد مشاركون بعد</td></tr>';
+      }
+
+      async function loadLeaderboard() {
+        const r = await fetch(`${API}/admin/leaderboard`, {
+          headers: adminHeaders(),
+        });
+        const data = await r.json();
+        document.getElementById("leaderTable").innerHTML =
+          data
+            .map(
+              (p, i) => `
+    <tr>
+      <td><span class="rank-badge rank-${i < 3 ? i + 1 : "other"}">${i + 1}</span></td>
+      <td>${p.name}</td>
+      <td style="direction:ltr;text-align:left">${p.phone || "-"}</td>
+      <td><span class="points-badge">${p.points || 0} نقطة</span></td>
+      <td style="color:var(--muted)">${p.total_answered || 0} / ${p.total_answered || 0}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${p.created_at?.split("T")[0] || "-"}</td>
+    </tr>
+  `,
+            )
+            .join("") ||
+          '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">لا يوجد بيانات</td></tr>';
+      }
+
+      async function loadParticipants() {
+        const r = await fetch(`${API}/admin/participants`, {
+          headers: adminHeaders(),
+        });
+        const data = await r.json();
+        document.getElementById("participantsCount").textContent =
+          `المشاركون (${data.length})`;
+        document.getElementById("participantsTable").innerHTML =
+          data
+            .map(
+              (p) => `
+    <tr>
+      <td>${p.name}</td>
+      <td style="direction:ltr;text-align:left">${p.phone || "-"}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${p.created_at?.split("T")[0] || "-"}</td>
+    </tr>
+  `,
+            )
+            .join("") ||
+          '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:30px">لا يوجد مشاركون</td></tr>';
+      }
+
+      // --- Questions ---
+      function initQuestionDays() {
+        const container = document.getElementById("dayTabsQ");
+        container.innerHTML = "";
+        for (let i = 1; i <= 30; i++) {
+          const tab = document.createElement("div");
+          tab.className = "day-tab" + (i === selectedQDay ? " active" : "");
+          tab.textContent = i;
+          tab.onclick = () => {
+            selectedQDay = i;
+            initQuestionDays();
+            loadDayQuestions(i);
+          };
+          container.appendChild(tab);
+        }
+        loadDayQuestions(selectedQDay);
+      }
+
+      async function loadDayQuestions(day) {
+        const r = await fetch(`${API}/admin/questions/${day}`, {
+          headers: adminHeaders(),
+        });
+        const data = await r.json();
+        const container = document.getElementById("questionsList");
+        if (!data.length) {
+          container.innerHTML =
+            '<div class="empty-state"><div class="icon">📝</div><p>لا توجد أسئلة لهذا اليوم</p></div>';
+          return;
+        }
+        const catMap = {
+          quran: "cat-quran",
+          ramadan: "cat-ramadan",
+          general: "cat-general",
+        };
+        const catLabel = {
+          quran: "📖 قرآن",
+          ramadan: "🌙 رمضان",
+          general: "☪️ عام",
+        };
+        const typeMap = {
+          multiple_choice: { cls: "type-mcq", label: "📝 اختيار متعدد" },
+          true_false: { cls: "type-tf", label: "✅ صح/خطأ" },
+          fill_blank: { cls: "type-fb", label: "✏️ أكمل الفراغ" },
+        };
+
+        container.innerHTML = data
+          .map((q) => {
+            const typeInfo =
+              typeMap[q.question_type] || typeMap.multiple_choice;
+            let optionsHtml = "";
+
+            if (q.question_type === "fill_blank") {
+              optionsHtml = `
+        <div style="padding:8px 12px;background:rgba(46,204,113,0.15);border-radius:8px;border:1px solid rgba(46,204,113,0.3)">
+          <strong style="color:var(--green)">الإجابة:</strong> ${q.correct_answer}
+        </div>`;
+            } else {
+              const opts = q.options || [];
+              const cols =
+                opts.length <= 2
+                  ? "1fr 1fr"
+                  : opts.length === 3
+                    ? "1fr 1fr 1fr"
+                    : "1fr 1fr";
+              optionsHtml = `<div style="display:grid;grid-template-columns:${cols};gap:8px;font-size:0.85rem">
+        ${opts
+          .map(
+            (opt, i) => `
+          <div style="padding:8px 12px;background:${String(q.correct_answer) === String(i) ? "rgba(46,204,113,0.15)" : "rgba(255,255,255,0.03)"};border-radius:8px;border:1px solid ${String(q.correct_answer) === String(i) ? "rgba(46,204,113,0.3)" : "rgba(255,255,255,0.05)"}">
+            <strong style="color:${String(q.correct_answer) === String(i) ? "var(--green)" : "var(--muted)"}">${i + 1}</strong> ${opt}
+            ${String(q.correct_answer) === String(i) ? '<span style="color:var(--green)"> ✓</span>' : ""}
+          </div>`,
+          )
+          .join("")}
+      </div>`;
+            }
+
+            return `
+      <div style="background:var(--card2);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid rgba(201,168,76,0.1)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <span class="type-badge ${typeInfo.cls}">${typeInfo.label}</span>
+            <span class="correct-badge ${catMap[q.category] || "cat-general"}">${catLabel[q.category] || "☪️ عام"}</span>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteQuestion(${q.id})">🗑️ حذف</button>
+        </div>
+        <p style="margin-bottom:12px;font-size:0.95rem;line-height:1.7">${q.question_text}</p>
+        ${optionsHtml}
+      </div>`;
+          })
+          .join("");
+      }
+
+      async function addQuestion() {
+        const type = document.getElementById("qType").value;
+        const questionText = document.getElementById("qText").value.trim();
+
+        if (!questionText) {
+          alert("يرجى كتابة نص السؤال");
+          return;
+        }
+
+        let options = [];
+        let correctAnswer = "";
+
+        if (type === "multiple_choice") {
+          const inputs = document.querySelectorAll(
+            "#optionsContainer .opt-input",
+          );
+          const radios = document.querySelectorAll(
+            "#optionsContainer .opt-radio",
+          );
+          options = [...inputs].map((el) => el.value.trim());
+
+          if (options.some((o) => !o)) {
+            alert("يرجى ملء جميع الخيارات");
+            return;
+          }
+          if (options.length < 2) {
+            alert("يجب إضافة خيارين على الأقل");
+            return;
+          }
+
+          const checked = [...radios].find((r) => r.checked);
+          if (!checked) {
+            alert("يرجى تحديد الإجابة الصحيحة");
+            return;
+          }
+
+          // Find the index of the checked radio among current entries
+          const entries = [
+            ...document.querySelectorAll("#optionsContainer .option-entry"),
+          ];
+          const checkedEntry = checked.closest(".option-entry");
+          correctAnswer = String(entries.indexOf(checkedEntry));
+        } else if (type === "true_false") {
+          options = ["صح", "خطأ"];
+          correctAnswer = document.getElementById("tfCorrect").value;
+        } else if (type === "fill_blank") {
+          correctAnswer = document.getElementById("fbCorrect").value.trim();
+          if (!correctAnswer) {
+            alert("يرجى إدخال الإجابة الصحيحة");
+            return;
+          }
+        }
+
+        const data = {
+          day: parseInt(document.getElementById("qDay").value),
+          question_type: type,
+          question_text: questionText,
+          options: options,
+          correct_answer: correctAnswer,
+          category: document.getElementById("qCat").value,
+          order_num: parseInt(document.getElementById("qOrder").value),
+        };
+
+        const r = await fetch(`${API}/admin/questions`, {
+          method: "POST",
+          headers: adminHeaders(),
+          body: JSON.stringify(data),
+        });
+        if (r.ok) {
+          resetQuestionForm();
+          selectedQDay = data.day;
+          initQuestionDays();
+          alert("✅ تم إضافة السؤال بنجاح");
+        } else {
+          const err = await r.json().catch(() => ({}));
+          alert(err.detail || "حدث خطأ!");
+        }
+      }
+
+      async function deleteQuestion(id) {
+        if (!confirm("هل أنت متأكد من حذف هذا السؤال؟")) return;
+        const r = await fetch(`${API}/admin/questions/${id}`, {
+          method: "DELETE",
+          headers: adminHeaders(),
+        });
+        if (r.ok) loadDayQuestions(selectedQDay);
+      }
+
+      async function saveSettings() {
+        const data = {
+          quiz_open_time: document.getElementById("settOpenTime").value,
+          current_day: parseInt(document.getElementById("settDay").value),
+        };
+        const r = await fetch(`${API}/admin/settings`, {
+          method: "PUT",
+          headers: adminHeaders(),
+          body: JSON.stringify(data),
+        });
+        if (r.ok) alert("✅ تم حفظ الإعدادات");
+      }
+
+      async function exportData() {
+        const r = await fetch(`${API}/admin/export`, {
+          headers: adminHeaders(),
+        });
+        const data = await r.json();
+        if (!data.length) {
+          alert("لا توجد بيانات للتصدير");
+          return;
+        }
+
+        const headers = Object.keys(data[0]);
+        const csv = [
+          headers.join(","),
+          ...data.map((row) =>
+            headers.map((h) => `"${row[h] || ""}"`).join(","),
+          ),
+        ].join("\n");
+        const blob = new Blob(["\uFEFF" + csv], {
+          type: "text/csv;charset=utf-8",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ramadan_quiz_${new Date().toISOString().split("T")[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    </script>
+  </body>
+</html>
