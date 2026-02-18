@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>لوحة تحكم المشرف - مسابقة رمضان</title>
+    <title>لوحة تحكم المشرف - مسابقة بذل الرمضانية</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap"
       rel="stylesheet"
@@ -501,8 +501,8 @@
       <div class="layout">
         <div class="sidebar">
           <div class="sidebar-logo">
-            <div class="moon">🌙</div>
-            <h3>مسابقة رمضان</h3>
+            <div class="moon">عائلة الوهيد</div>
+            <h3>مسابقة صندوق بذل الرمضانية</h3>
           </div>
           <div class="nav-item active" onclick="showPage('overview')">
             <span class="nav-icon">📊</span> نظرة عامة
@@ -571,7 +571,7 @@
             </h2>
 
             <div class="section-card">
-              <div class="section-title">إضافة سؤال جديد</div>
+              <div class="section-title" id="qFormTitle">إضافة سؤال جديد</div>
               <div class="form-row">
                 <div class="form-group" style="margin: 0">
                   <label>نوع السؤال</label>
@@ -650,13 +650,23 @@
                 </div>
               </div>
 
-              <button
-                class="btn btn-gold"
-                onclick="addQuestion()"
-                style="margin-top: 12px"
-              >
-                ➕ إضافة السؤال
-              </button>
+              <div style="display: flex; gap: 10px; margin-top: 12px">
+                <button
+                  class="btn btn-gold"
+                  onclick="addQuestion()"
+                  id="qSubmitBtn"
+                >
+                  ➕ إضافة السؤال
+                </button>
+                <button
+                  class="btn btn-outline"
+                  onclick="resetQuestionForm()"
+                  id="qCancelEditBtn"
+                  style="display: none"
+                >
+                  إلغاء التعديل
+                </button>
+              </div>
             </div>
 
             <div class="section-card">
@@ -735,6 +745,10 @@
                   <input type="time" id="settOpenTime" value="21:00" />
                 </div>
                 <div class="form-group">
+                  <label>وقت إغلاق المسابقة يومياً</label>
+                  <input type="time" id="settCloseTime" value="22:45" />
+                </div>
+                <div class="form-group">
                   <label>اليوم الحالي من رمضان</label>
                   <select id="settDay"></select>
                 </div>
@@ -757,6 +771,7 @@
       let ADMIN_TOKEN = "";
       let selectedQDay = 1;
       let optionCount = 0;
+      let editingQuestionId = null;
 
       // Populate day selects
       function populateDaySelects() {
@@ -810,6 +825,7 @@
         if (name === "leaderboard") loadLeaderboard();
         if (name === "participants") loadParticipants();
         if (name === "questions") initQuestionDays();
+        if (name === "settings") loadCurrentSettings();
       }
 
       function initDashboard() {
@@ -853,8 +869,12 @@
         const div = document.createElement("div");
         div.className = "option-entry";
         div.innerHTML = `
-    <input type="radio" name="correctOpt" value="${idx}" class="opt-radio" ${count === 0 ? "checked" : ""} />
-    <input type="text" class="opt-input" placeholder="الخيار ${count + 1}" value="${value}" />
+    <input type="radio" name="correctOpt" value="${idx}" class="opt-radio" ${
+          count === 0 ? "checked" : ""
+        } />
+    <input type="text" class="opt-input" placeholder="الخيار ${
+      count + 1
+    }" value="${value}" />
     <button class="remove-opt" onclick="removeOptionField(this)" title="حذف">✕</button>
   `;
         container.appendChild(div);
@@ -894,6 +914,11 @@
       }
 
       function resetQuestionForm() {
+        editingQuestionId = null;
+        document.getElementById("qFormTitle").textContent = "إضافة سؤال جديد";
+        document.getElementById("qSubmitBtn").textContent = "➕ إضافة السؤال";
+        const cancelBtn = document.getElementById("qCancelEditBtn");
+        if (cancelBtn) cancelBtn.style.display = "none";
         document.getElementById("qType").value = "multiple_choice";
         document.getElementById("qText").value = "";
         document.getElementById("qOrder").value = "1";
@@ -925,12 +950,16 @@
             .map(
               (p, i) => `
     <tr>
-      <td><span class="rank-badge rank-${i < 3 ? i + 1 : "other"}">${i + 1}</span></td>
+      <td><span class="rank-badge rank-${i < 3 ? i + 1 : "other"}">${
+                i + 1
+              }</span></td>
       <td>${p.name}</td>
       <td><span class="points-badge">${p.points || 0} نقطة</span></td>
-      <td style="color:var(--muted);font-size:0.8rem">${p.created_at?.split("T")[0] || "-"}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${
+        p.created_at?.split("T")[0] || "-"
+      }</td>
     </tr>
-  `,
+  `
             )
             .join("") ||
           '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">لا يوجد مشاركون بعد</td></tr>';
@@ -946,14 +975,20 @@
             .map(
               (p, i) => `
     <tr>
-      <td><span class="rank-badge rank-${i < 3 ? i + 1 : "other"}">${i + 1}</span></td>
+      <td><span class="rank-badge rank-${i < 3 ? i + 1 : "other"}">${
+                i + 1
+              }</span></td>
       <td>${p.name}</td>
       <td style="direction:ltr;text-align:left">${p.phone || "-"}</td>
       <td><span class="points-badge">${p.points || 0} نقطة</span></td>
-      <td style="color:var(--muted)">${p.total_answered || 0} / ${p.total_answered || 0}</td>
-      <td style="color:var(--muted);font-size:0.8rem">${p.created_at?.split("T")[0] || "-"}</td>
+      <td style="color:var(--muted)">${p.total_answered || 0} / ${
+                p.total_answered || 0
+              }</td>
+      <td style="color:var(--muted);font-size:0.8rem">${
+        p.created_at?.split("T")[0] || "-"
+      }</td>
     </tr>
-  `,
+  `
             )
             .join("") ||
           '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">لا يوجد بيانات</td></tr>';
@@ -964,8 +999,9 @@
           headers: adminHeaders(),
         });
         const data = await r.json();
-        document.getElementById("participantsCount").textContent =
-          `المشاركون (${data.length})`;
+        document.getElementById(
+          "participantsCount"
+        ).textContent = `المشاركون (${data.length})`;
         document.getElementById("participantsTable").innerHTML =
           data
             .map(
@@ -973,9 +1009,11 @@
     <tr>
       <td>${p.name}</td>
       <td style="direction:ltr;text-align:left">${p.phone || "-"}</td>
-      <td style="color:var(--muted);font-size:0.8rem">${p.created_at?.split("T")[0] || "-"}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${
+        p.created_at?.split("T")[0] || "-"
+      }</td>
     </tr>
-  `,
+  `
             )
             .join("") ||
           '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:30px">لا يوجد مشاركون</td></tr>';
@@ -1043,16 +1081,32 @@
                 opts.length <= 2
                   ? "1fr 1fr"
                   : opts.length === 3
-                    ? "1fr 1fr 1fr"
-                    : "1fr 1fr";
+                  ? "1fr 1fr 1fr"
+                  : "1fr 1fr";
               optionsHtml = `<div style="display:grid;grid-template-columns:${cols};gap:8px;font-size:0.85rem">
         ${opts
           .map(
             (opt, i) => `
-          <div style="padding:8px 12px;background:${String(q.correct_answer) === String(i) ? "rgba(46,204,113,0.15)" : "rgba(255,255,255,0.03)"};border-radius:8px;border:1px solid ${String(q.correct_answer) === String(i) ? "rgba(46,204,113,0.3)" : "rgba(255,255,255,0.05)"}">
-            <strong style="color:${String(q.correct_answer) === String(i) ? "var(--green)" : "var(--muted)"}">${i + 1}</strong> ${opt}
-            ${String(q.correct_answer) === String(i) ? '<span style="color:var(--green)"> ✓</span>' : ""}
-          </div>`,
+          <div style="padding:8px 12px;background:${
+            String(q.correct_answer) === String(i)
+              ? "rgba(46,204,113,0.15)"
+              : "rgba(255,255,255,0.03)"
+          };border-radius:8px;border:1px solid ${
+              String(q.correct_answer) === String(i)
+                ? "rgba(46,204,113,0.3)"
+                : "rgba(255,255,255,0.05)"
+            }">
+            <strong style="color:${
+              String(q.correct_answer) === String(i)
+                ? "var(--green)"
+                : "var(--muted)"
+            }">${i + 1}</strong> ${opt}
+            ${
+              String(q.correct_answer) === String(i)
+                ? '<span style="color:var(--green)"> ✓</span>'
+                : ""
+            }
+          </div>`
           )
           .join("")}
       </div>`;
@@ -1063,15 +1117,63 @@
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
           <div>
             <span class="type-badge ${typeInfo.cls}">${typeInfo.label}</span>
-            <span class="correct-badge ${catMap[q.category] || "cat-general"}">${catLabel[q.category] || "☪️ عام"}</span>
+            <span class="correct-badge ${
+              catMap[q.category] || "cat-general"
+            }">${catLabel[q.category] || "☪️ عام"}</span>
           </div>
-          <button class="btn btn-danger btn-sm" onclick="deleteQuestion(${q.id})">🗑️ حذف</button>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-blue btn-sm" onclick='editQuestion(${JSON.stringify(
+              q
+            ).replace(/'/g, "&#39;")})'>✏️ تعديل</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteQuestion(${
+              q.id
+            })">🗑️ حذف</button>
+          </div>
         </div>
-        <p style="margin-bottom:12px;font-size:0.95rem;line-height:1.7">${q.question_text}</p>
+        <p style="margin-bottom:12px;font-size:0.95rem;line-height:1.7">${
+          q.question_text
+        }</p>
         ${optionsHtml}
       </div>`;
           })
           .join("");
+      }
+
+      function editQuestion(q) {
+        editingQuestionId = q.id;
+        document.getElementById("qFormTitle").textContent = "✏️ تعديل السؤال";
+        document.getElementById("qSubmitBtn").textContent = "💾 حفظ التعديل";
+        document.getElementById("qCancelEditBtn").style.display = "";
+
+        document.getElementById("qType").value = q.question_type;
+        document.getElementById("qDay").value = q.day;
+        document.getElementById("qCat").value = q.category || "general";
+        document.getElementById("qOrder").value = q.order_num || 1;
+        document.getElementById("qText").value = q.question_text;
+
+        onQuestionTypeChange();
+
+        if (q.question_type === "multiple_choice") {
+          const container = document.getElementById("optionsContainer");
+          container.innerHTML = "";
+          optionCount = 0;
+          (q.options || []).forEach((opt, i) => {
+            addOptionField(opt);
+          });
+          // Check the correct answer radio
+          const correctIdx = parseInt(q.correct_answer);
+          const radios = container.querySelectorAll(".opt-radio");
+          if (radios[correctIdx]) radios[correctIdx].checked = true;
+        } else if (q.question_type === "true_false") {
+          document.getElementById("tfCorrect").value = q.correct_answer;
+        } else if (q.question_type === "fill_blank") {
+          document.getElementById("fbCorrect").value = q.correct_answer;
+        }
+
+        // Scroll to form
+        document
+          .getElementById("qFormTitle")
+          .scrollIntoView({ behavior: "smooth" });
       }
 
       async function addQuestion() {
@@ -1088,10 +1190,10 @@
 
         if (type === "multiple_choice") {
           const inputs = document.querySelectorAll(
-            "#optionsContainer .opt-input",
+            "#optionsContainer .opt-input"
           );
           const radios = document.querySelectorAll(
-            "#optionsContainer .opt-radio",
+            "#optionsContainer .opt-radio"
           );
           options = [...inputs].map((el) => el.value.trim());
 
@@ -1137,16 +1239,28 @@
           order_num: parseInt(document.getElementById("qOrder").value),
         };
 
-        const r = await fetch(`${API}/admin/questions`, {
-          method: "POST",
-          headers: adminHeaders(),
-          body: JSON.stringify(data),
-        });
+        let r;
+        if (editingQuestionId) {
+          r = await fetch(`${API}/admin/questions/${editingQuestionId}`, {
+            method: "PUT",
+            headers: adminHeaders(),
+            body: JSON.stringify(data),
+          });
+        } else {
+          r = await fetch(`${API}/admin/questions`, {
+            method: "POST",
+            headers: adminHeaders(),
+            body: JSON.stringify(data),
+          });
+        }
         if (r.ok) {
+          const wasEditing = !!editingQuestionId;
           resetQuestionForm();
           selectedQDay = data.day;
           initQuestionDays();
-          alert("✅ تم إضافة السؤال بنجاح");
+          alert(
+            wasEditing ? "✅ تم تعديل السؤال بنجاح" : "✅ تم إضافة السؤال بنجاح"
+          );
         } else {
           const err = await r.json().catch(() => ({}));
           alert(err.detail || "حدث خطأ!");
@@ -1162,9 +1276,24 @@
         if (r.ok) loadDayQuestions(selectedQDay);
       }
 
+      async function loadCurrentSettings() {
+        try {
+          const r = await fetch(`${API}/status`);
+          const data = await r.json();
+          if (data.quiz_open_time)
+            document.getElementById("settOpenTime").value = data.quiz_open_time;
+          if (data.quiz_close_time)
+            document.getElementById("settCloseTime").value =
+              data.quiz_close_time;
+          if (data.current_day)
+            document.getElementById("settDay").value = data.current_day;
+        } catch (e) {}
+      }
+
       async function saveSettings() {
         const data = {
           quiz_open_time: document.getElementById("settOpenTime").value,
+          quiz_close_time: document.getElementById("settCloseTime").value,
           current_day: parseInt(document.getElementById("settDay").value),
         };
         const r = await fetch(`${API}/admin/settings`, {
@@ -1189,7 +1318,7 @@
         const csv = [
           headers.join(","),
           ...data.map((row) =>
-            headers.map((h) => `"${row[h] || ""}"`).join(","),
+            headers.map((h) => `"${row[h] || ""}"`).join(",")
           ),
         ].join("\n");
         const blob = new Blob(["\uFEFF" + csv], {
@@ -1198,7 +1327,9 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `ramadan_quiz_${new Date().toISOString().split("T")[0]}.csv`;
+        a.download = `ramadan_quiz_${
+          new Date().toISOString().split("T")[0]
+        }.csv`;
         a.click();
         URL.revokeObjectURL(url);
       }

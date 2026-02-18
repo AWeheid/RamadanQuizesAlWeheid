@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>مسابقة رمضان العائلية 🌙</title>
+    <title>مسابقة صندوق ( بذل ) الوهيد الرمضانية 🌙</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap"
       rel="stylesheet"
@@ -45,8 +45,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image:
-          radial-gradient(
+        background-image: radial-gradient(
             1px 1px at 10% 15%,
             rgba(255, 255, 255, 0.8) 0%,
             transparent 100%
@@ -172,7 +171,7 @@
         }
       }
       .header h1 {
-        font-family: "Amiri", serif;
+        /* font-family: "Amiri", serif; */
         font-size: 2.2rem;
         color: var(--gold);
         text-shadow: 0 0 30px rgba(201, 168, 76, 0.4);
@@ -304,6 +303,79 @@
           opacity: 0.5;
           transform: scale(1.3);
         }
+      }
+
+      /* Auth Tabs */
+      .auth-tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(201, 168, 76, 0.2);
+      }
+      .auth-tab {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        background: var(--card2);
+        color: var(--muted);
+        border: none;
+        font-family: "Cairo", sans-serif;
+      }
+      .auth-tab.active {
+        background: linear-gradient(
+          135deg,
+          rgba(201, 168, 76, 0.2),
+          rgba(201, 168, 76, 0.1)
+        );
+        color: var(--gold);
+        border-bottom: 2px solid var(--gold);
+      }
+      .auth-panel {
+        display: none;
+      }
+      .auth-panel.active {
+        display: block;
+      }
+
+      /* Already Done Screen */
+      .already-done {
+        text-align: center;
+        padding: 20px 0;
+      }
+      .already-done .icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+      }
+      .already-done h3 {
+        color: var(--gold);
+        margin-bottom: 8px;
+        font-size: 1.2rem;
+      }
+      .already-done p {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+      .cumulative-score {
+        background: var(--card2);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+        text-align: center;
+        border: 1px solid rgba(201, 168, 76, 0.15);
+      }
+      .cumulative-score .big-num {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--gold);
+      }
+      .cumulative-score .label {
+        font-size: 0.8rem;
+        color: var(--muted);
       }
 
       /* Form */
@@ -607,7 +679,7 @@
         text-align: center;
       }
       .score-num {
-        font-family: "Amiri", serif;
+        /* font-family: "Amiri", serif; */
         font-size: 2rem;
         font-weight: 700;
         color: var(--gold);
@@ -707,10 +779,12 @@
   <body>
     <div class="container">
       <div class="header">
-        <div class="moon">🌙</div>
-        <h1>مسابقة رمضان العائلية</h1>
-        <p class="subtitle">تنافس، تعلّم، وافز بالجوائز</p>
-        <div class="day-badge" id="dayBadge">اليوم الأول</div>
+        <div class="moon">
+          <!-- عائلة الوهيد -->
+          <h1>مسابقة صندوق بذل الرمضانية</h1>
+        </div>
+
+        <div class="day-badge" id="dayBadge">...</div>
       </div>
 
       <!-- COUNTDOWN SCREEN -->
@@ -738,31 +812,72 @@
       <div id="openBadge" class="card hidden">
         <div class="quiz-open-badge">
           <div class="pulse-dot"></div>
-          <span>المسابقة مفتوحة الآن! اشترك قبل انتهاء الوقت</span>
+          <span>المسابقة متاحة الآن! اشترك قبل انتهاء الوقت</span>
         </div>
       </div>
 
-      <!-- REGISTER SCREEN -->
-      <div id="screenRegister" class="card hidden">
-        <div class="card-title">✨ سجّل مشاركتك</div>
-        <div class="form-group">
-          <label>الاسم الكامل *</label>
-          <input type="text" id="inputName" placeholder="أدخل اسمك هنا" />
+      <!-- AUTH SCREEN (Signup / Login) -->
+      <div id="screenAuth" class="card hidden">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchAuthTab('login')">
+            🔑 تسجيل الدخول
+          </button>
+          <button class="auth-tab" onclick="switchAuthTab('signup')">
+            ✨ تسجيل جديد
+          </button>
         </div>
-        <div class="form-group">
-          <label>رقم الجوال</label>
-          <input
-            type="tel"
-            id="inputPhone"
-            placeholder="05xxxxxxxx (اختياري)"
-          />
-          <p class="hint">
-            📌 رقم الجوال يُستخدم للتعريف الفريد فقط، لن يُشارَك مع أحد
+
+        <!-- Login Panel -->
+        <div id="panelLogin" class="auth-panel active">
+          <div class="form-group">
+            <label>رقم الجوال</label>
+            <input type="tel" id="loginPhone" placeholder="05xxxxxxxx" />
+          </div>
+          <button class="btn btn-primary" id="btnLogin" onclick="doLogin()">
+            دخول 🚀
+          </button>
+        </div>
+
+        <!-- Signup Panel -->
+        <div id="panelSignup" class="auth-panel">
+          <div class="form-group">
+            <label>الاسم الكامل *</label>
+            <input type="text" id="inputName" placeholder="أدخل اسمك هنا" />
+          </div>
+          <div class="form-group">
+            <label>رقم الجوال *</label>
+            <input type="tel" id="inputPhone" placeholder="05xxxxxxxx" />
+            <p class="hint">
+              📌 رقم الجوال يُستخدم لتسجيل الدخول لاحقاً، لن يُشارَك مع أحد
+            </p>
+          </div>
+          <button
+            class="btn btn-primary"
+            id="btnRegister"
+            onclick="doRegister()"
+          >
+            سجّل وابدأ المسابقة 🚀
+          </button>
+        </div>
+      </div>
+
+      <!-- ALREADY ANSWERED SCREEN -->
+      <div id="screenAlreadyDone" class="card hidden">
+        <div class="already-done">
+          <div class="icon">✅</div>
+          <h3 id="welcomeBackName">أهلاً بعودتك!</h3>
+          <p>لقد أجبت على أسئلة اليوم 🎉<br />عُد غداً لأسئلة جديدة!</p>
+          <p
+            style="
+              color: var(--muted);
+              font-size: 0.85rem;
+              margin-top: 12px;
+              line-height: 1.7;
+            "
+          >
+            🏆 سيتم الإعلان عن الفائزين في اجتماع العيد إن شاء الله
           </p>
         </div>
-        <button class="btn btn-primary" id="btnRegister" onclick="doRegister()">
-          ابدأ المسابقة 🚀
-        </button>
       </div>
 
       <!-- QUIZ SCREEN -->
@@ -787,30 +902,39 @@
         </div>
       </div>
 
-      <!-- SCORE SCREEN -->
+      <!-- SCORE SCREEN (Thank you, no points shown) -->
       <div id="screenScore" class="card hidden">
-        <div class="score-display">
-          <div class="score-circle" id="scoreCircle">
-            <div class="score-inner">
-              <div class="score-num" id="scoreNum">0</div>
-              <div class="score-total" id="scoreTotal">من 0</div>
-            </div>
-          </div>
-          <div class="score-stars" id="scoreStars">⭐</div>
-          <div class="score-message" id="scoreMessage">أحسنت!</div>
+        <div style="text-align: center; padding: 30px 0">
+          <div style="font-size: 3.5rem; margin-bottom: 16px">🎉</div>
+          <h2
+            style="color: var(--gold); margin-bottom: 12px; font-size: 1.4rem"
+          >
+            جزاك الله خيراً!
+          </h2>
+          <p
+            style="
+              color: var(--text);
+              font-size: 1.05rem;
+              line-height: 1.8;
+              margin-bottom: 20px;
+            "
+          >
+            تم تسجيل إجاباتك بنجاح<br />
+            نحن نحسب نقاطك ونجمعها كل يوم
+          </p>
+          <div class="divider"></div>
+          <p
+            style="
+              color: var(--muted);
+              font-size: 0.9rem;
+              line-height: 1.8;
+              margin-top: 16px;
+            "
+          >
+            🏆 سيتم الإعلان عن الفائزين في اجتماع العيد إن شاء الله<br />
+            واصل المشاركة كل يوم لتزيد فرصتك بالفوز!
+          </p>
         </div>
-        <div class="divider"></div>
-        <p
-          style="
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.9rem;
-            line-height: 1.7;
-          "
-        >
-          سيتم الإعلان عن النتائج النهائية في يوم العيد 🎉<br />
-          واصل المشاركة كل يوم لتجمع نقاطك!
-        </p>
       </div>
 
       <!-- Footer -->
@@ -823,7 +947,7 @@
           padding-bottom: 20px;
         "
       >
-        رمضان كريم 🌙 | مسابقة عائلية
+        رمضان كريم 🌙 | صندوق بذل
       </p>
     </div>
 
@@ -833,6 +957,7 @@
       const API = "/api";
       let state = {
         participantId: null,
+        participantName: null,
         currentDay: 1,
         questions: [],
         currentQ: 0,
@@ -842,6 +967,7 @@
         timeLeft: 30,
         quizOpen: false,
         openTime: "21:00",
+        closeTime: "22:45",
       };
 
       function showToast(msg, type = "") {
@@ -899,9 +1025,11 @@
           state.currentDay = data.current_day;
           state.quizOpen = data.is_open;
           state.openTime = data.quiz_open_time;
+          state.closeTime = data.quiz_close_time || "22:45";
 
-          document.getElementById("dayBadge").textContent =
-            `اليوم ${arabicDay(state.currentDay)} من رمضان ✨`;
+          document.getElementById("dayBadge").textContent = `اليوم ${arabicDay(
+            state.currentDay
+          )} من رمضان ✨`;
           updateCountdownLabel();
           return data;
         } catch (e) {
@@ -914,38 +1042,57 @@
         const [h, m] = state.openTime.split(":");
         const ampm = parseInt(h) >= 12 ? "مساءً" : "صباحاً";
         const h12 = parseInt(h) > 12 ? parseInt(h) - 12 : parseInt(h);
-        document.getElementById("countdownLabel").textContent =
-          `تفتح المسابقة الساعة ${h12}:${m} ${ampm}`;
+        document.getElementById(
+          "countdownLabel"
+        ).textContent = `تفتح المسابقة الساعة ${h12}:${m} ${ampm}`;
       }
 
       function startCountdown() {
-        setInterval(async () => {
-          const data = await fetchStatus().catch(() => null);
+        // Poll server status every 30 seconds (not every tick)
+        setInterval(() => {
+          fetchStatus().catch(() => null);
+        }, 30000);
 
+        // Update countdown UI every 1 second (client-side only)
+        setInterval(() => {
           const now = new Date();
           const [h, m] = state.openTime.split(":");
-          const target = new Date();
-          target.setHours(parseInt(h), parseInt(m), 0, 0);
+          const [ch, cm] = (state.closeTime || "22:45").split(":");
 
-          if (now >= target) {
-            // Check if within 2hr window
-            const closeTime = new Date(target);
-            closeTime.setHours(closeTime.getHours() + 2);
+          const openTarget = new Date();
+          openTarget.setHours(parseInt(h), parseInt(m), 0, 0);
 
-            if (now < closeTime) {
+          const closeTarget = new Date();
+          closeTarget.setHours(parseInt(ch), parseInt(cm), 0, 0);
+
+          // Quiz is currently open
+          if (now >= openTarget && now <= closeTarget) {
+            if (!state.quizOpen) {
               state.quizOpen = true;
               showQuizOpen();
-              return;
             }
+            return;
           }
 
-          let diff = target - now;
-          if (diff < 0) {
-            // Next day
-            target.setDate(target.getDate() + 1);
-            diff = target - now;
+          // Quiz closed or not yet open - countdown to next open
+          // If past close time today, target is tomorrow's open time
+          let nextOpen = new Date();
+          nextOpen.setHours(parseInt(h), parseInt(m), 0, 0);
+          if (now >= nextOpen) {
+            nextOpen.setDate(nextOpen.getDate() + 1);
           }
 
+          // If quiz was open but now closed, show countdown screen again
+          if (state.quizOpen && now > closeTarget) {
+            state.quizOpen = false;
+            document.getElementById("screenAuth").classList.add("hidden");
+            document.getElementById("openBadge").classList.add("hidden");
+            document
+              .getElementById("screenCountdown")
+              .classList.remove("hidden");
+          }
+
+          const diff = nextOpen - now;
           const hours = Math.floor(diff / 3600000);
           const mins = Math.floor((diff % 3600000) / 60000);
           const secs = Math.floor((diff % 60000) / 1000);
@@ -959,7 +1106,65 @@
       function showQuizOpen() {
         document.getElementById("screenCountdown").classList.add("hidden");
         document.getElementById("openBadge").classList.remove("hidden");
-        document.getElementById("screenRegister").classList.remove("hidden");
+        document.getElementById("screenAuth").classList.remove("hidden");
+      }
+
+      function switchAuthTab(tab) {
+        document
+          .querySelectorAll(".auth-tab")
+          .forEach((t) => t.classList.remove("active"));
+        document
+          .querySelectorAll(".auth-panel")
+          .forEach((p) => p.classList.remove("active"));
+        if (tab === "login") {
+          document
+            .querySelector(".auth-tab:first-child")
+            .classList.add("active");
+          document.getElementById("panelLogin").classList.add("active");
+        } else {
+          document
+            .querySelector(".auth-tab:last-child")
+            .classList.add("active");
+          document.getElementById("panelSignup").classList.add("active");
+        }
+      }
+
+      async function doLogin() {
+        const phone = document.getElementById("loginPhone").value.trim();
+        if (!phone) {
+          showToast("الرجاء إدخال رقم الجوال", "error");
+          return;
+        }
+
+        const btn = document.getElementById("btnLogin");
+        btn.disabled = true;
+        btn.textContent = "جارٍ الدخول...";
+
+        try {
+          const r = await fetch(`${API}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone }),
+          });
+          const data = await r.json();
+
+          if (!r.ok) {
+            showToast(data.detail || "حدث خطأ", "error");
+            btn.disabled = false;
+            btn.textContent = "دخول 🚀";
+            return;
+          }
+
+          state.participantId = data.participant_id;
+          state.participantName = data.name;
+          document.getElementById("screenAuth").classList.add("hidden");
+          document.getElementById("openBadge").classList.add("hidden");
+          await afterAuth();
+        } catch (e) {
+          showToast("تعذّر الاتصال بالخادم", "error");
+          btn.disabled = false;
+          btn.textContent = "دخول 🚀";
+        }
       }
 
       async function doRegister() {
@@ -968,6 +1173,10 @@
 
         if (!name) {
           showToast("الرجاء إدخال اسمك", "error");
+          return;
+        }
+        if (!phone) {
+          showToast("رقم الجوال مطلوب للتسجيل", "error");
           return;
         }
 
@@ -979,24 +1188,55 @@
           const r = await fetch(`${API}/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, phone: phone || null }),
+            body: JSON.stringify({ name, phone }),
           });
           const data = await r.json();
 
           if (!r.ok) {
             showToast(data.detail || "حدث خطأ", "error");
             btn.disabled = false;
-            btn.textContent = "ابدأ المسابقة 🚀";
+            btn.textContent = "سجّل وابدأ المسابقة 🚀";
             return;
           }
 
           state.participantId = data.participant_id;
-          await loadAndStartQuiz();
+          state.participantName = data.name;
+          document.getElementById("screenAuth").classList.add("hidden");
+          document.getElementById("openBadge").classList.add("hidden");
+          await afterAuth();
         } catch (e) {
           showToast("تعذّر الاتصال بالخادم", "error");
           btn.disabled = false;
-          btn.textContent = "ابدأ المسابقة 🚀";
+          btn.textContent = "سجّل وابدأ المسابقة 🚀";
         }
+      }
+
+      async function afterAuth() {
+        // Hide auth screen + badge (already hidden in doLogin/doRegister, but be safe)
+        document.getElementById("screenAuth").classList.add("hidden");
+        document.getElementById("openBadge").classList.add("hidden");
+
+        // Check if already answered today
+        try {
+          const checkR = await fetch(
+            `${API}/check-day/${state.participantId}/${state.currentDay}`
+          );
+          const checkData = await checkR.json();
+
+          if (checkData.answered) {
+            document.getElementById("welcomeBackName").textContent = `أهلاً ${
+              state.participantName || ""
+            } 👋`;
+            document
+              .getElementById("screenAlreadyDone")
+              .classList.remove("hidden");
+            return;
+          }
+        } catch (e) {
+          // If check fails, proceed to quiz anyway
+        }
+
+        await loadAndStartQuiz();
       }
 
       async function loadAndStartQuiz() {
@@ -1009,7 +1249,7 @@
             return;
           }
 
-          document.getElementById("screenRegister").classList.add("hidden");
+          document.getElementById("screenAuth").classList.add("hidden");
           document.getElementById("openBadge").classList.add("hidden");
           document.getElementById("screenQuiz").classList.remove("hidden");
 
@@ -1034,9 +1274,8 @@
       function updateProgressBar(idx, result) {
         document.querySelectorAll(".qpb-item").forEach((el, i) => {
           el.className = "qpb-item";
-          if (i < idx)
-            el.classList.add(state.answers[i] ? "done-correct" : "done-wrong");
-          else if (i === idx) el.classList.add("active");
+          if (i <= idx) el.classList.add("done-correct");
+          else if (i === idx + 1) el.classList.add("active");
         });
       }
 
@@ -1045,16 +1284,18 @@
         state.currentQ = idx;
         state.timeLeft = 30;
 
-        document.getElementById("questionProgress").textContent =
-          `السؤال ${idx + 1} من ${state.questions.length}`;
+        document.getElementById("questionProgress").textContent = `السؤال ${
+          idx + 1
+        } من ${state.questions.length}`;
         document.getElementById("questionCategory").textContent =
           q.category === "quran"
             ? "📖 قرآن كريم"
             : q.category === "ramadan"
-              ? "🌙 رمضان"
-              : "☪️ عام";
+            ? "🌙 رمضان"
+            : "☪️ عام";
         document.getElementById("questionText").textContent = q.question_text;
         document.getElementById("answerFeedback").className = "answer-feedback";
+        document.getElementById("answerFeedback").textContent = "";
 
         const container = document.getElementById("optionsContainer");
         container.innerHTML = "";
@@ -1125,13 +1366,14 @@
           if (inp) inp.disabled = true;
           if (btn) btn.disabled = true;
         } else {
-          lockOptions(null, q);
+          document
+            .querySelectorAll(".option")
+            .forEach((el) => el.classList.add("disabled"));
         }
-        showFeedback(false, null, q);
         await submitAnswer(q.id, "", false, 30);
         state.answers.push(false);
         updateProgressBar(state.currentQ, false);
-        setTimeout(() => nextQuestion(), 1800);
+        setTimeout(() => nextQuestion(), 800);
       }
 
       async function submitFillBlank() {
@@ -1151,7 +1393,7 @@
         btn.disabled = true;
 
         try {
-          const r = await fetch(`${API}/answer`, {
+          await fetch(`${API}/answer`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -1161,15 +1403,10 @@
               time_taken: timeTaken,
             }),
           });
-          const data = await r.json();
-          const isCorrect = data.is_correct;
 
-          showFeedback(isCorrect, data.correct_answer, q);
-          if (isCorrect) state.score++;
-          state.answers.push(isCorrect);
-          updateProgressBar(state.currentQ, isCorrect);
-
-          setTimeout(() => nextQuestion(), 2000);
+          state.answers.push(true);
+          updateProgressBar(state.currentQ, true);
+          setTimeout(() => nextQuestion(), 800);
         } catch (e) {
           showToast("خطأ في الإرسال", "error");
           inp.disabled = false;
@@ -1186,14 +1423,14 @@
           .querySelectorAll(".option")
           .forEach((el) => el.classList.add("disabled"));
 
-        // Highlight selected
+        // Highlight selected (neutral, no correct/wrong)
         const selectedEl = [...document.querySelectorAll(".option")].find(
-          (el) => el.dataset.index === val,
+          (el) => el.dataset.index === val
         );
         if (selectedEl) selectedEl.classList.add("selected");
 
         try {
-          const r = await fetch(`${API}/answer`, {
+          await fetch(`${API}/answer`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -1203,59 +1440,12 @@
               time_taken: timeTaken,
             }),
           });
-          const data = await r.json();
-          const isCorrect = data.is_correct;
-          const correctVal = data.correct_answer;
 
-          lockOptions(correctVal, q);
-          showFeedback(isCorrect, correctVal, q);
-
-          if (isCorrect) state.score++;
-          state.answers.push(isCorrect);
-          updateProgressBar(state.currentQ, isCorrect);
-
-          setTimeout(() => nextQuestion(), 2000);
+          state.answers.push(true);
+          updateProgressBar(state.currentQ, true);
+          setTimeout(() => nextQuestion(), 800);
         } catch (e) {
           showToast("خطأ في الإرسال", "error");
-        }
-      }
-
-      function lockOptions(correctVal, q) {
-        document.querySelectorAll(".option").forEach((el) => {
-          el.classList.add("disabled");
-          const idx = el.dataset.index;
-          if (correctVal !== null && idx === String(correctVal)) {
-            el.classList.add("correct");
-          } else if (
-            el.classList.contains("selected") &&
-            idx !== String(correctVal)
-          ) {
-            el.classList.add("wrong");
-          }
-        });
-      }
-
-      function showFeedback(isCorrect, correctAnswer, q) {
-        const fb = document.getElementById("answerFeedback");
-        if (isCorrect) {
-          fb.textContent = "✅ إجابة صحيحة! ممتاز 🎉";
-          fb.className = "answer-feedback correct";
-        } else {
-          const qtype = (q && q.question_type) || "multiple_choice";
-          let correctText = "";
-          if (correctAnswer !== null && correctAnswer !== undefined) {
-            if (qtype === "fill_blank") {
-              correctText = correctAnswer;
-            } else {
-              const opts = (q && q.options) || [];
-              const idx = parseInt(correctAnswer);
-              correctText = opts[idx] || correctAnswer;
-            }
-          }
-          fb.textContent = correctText
-            ? `❌ الإجابة الصحيحة: ${correctText}`
-            : "⏰ انتهى الوقت!";
-          fb.className = "answer-feedback wrong";
         }
       }
 
@@ -1285,31 +1475,7 @@
 
       function showScore() {
         document.getElementById("screenQuiz").classList.add("hidden");
-        const scoreCard = document.getElementById("screenScore");
-        scoreCard.classList.remove("hidden");
-
-        const total = state.questions.length;
-        const correct = state.score;
-        const pct = Math.round((correct / total) * 100);
-
-        document.getElementById("scoreNum").textContent = correct;
-        document.getElementById("scoreTotal").textContent = `من ${total}`;
-        document
-          .getElementById("scoreCircle")
-          .style.setProperty("--pct", `${pct}%`);
-
-        let stars = "⭐";
-        let msg = "حاول مرة أخرى غداً 💪";
-        if (correct === total) {
-          stars = "⭐⭐⭐";
-          msg = "مثالي! ماشاء الله عليك! 🏆";
-        } else if (pct >= 66) {
-          stars = "⭐⭐";
-          msg = "أحسنت! إجابات رائعة 👏";
-        }
-
-        document.getElementById("scoreStars").textContent = stars;
-        document.getElementById("scoreMessage").textContent = msg;
+        document.getElementById("screenScore").classList.remove("hidden");
       }
 
       // Init

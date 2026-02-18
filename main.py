@@ -8,6 +8,9 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="Ramadan Quiz API")
 
@@ -83,6 +86,9 @@ def init_db():
     c.execute(
         "INSERT INTO quiz_settings (key, value) VALUES ('current_day', '1') ON CONFLICT (key) DO NOTHING"
     )
+    c.execute(
+        "INSERT INTO quiz_settings (key, value) VALUES ('quiz_close_time', '22:45') ON CONFLICT (key) DO NOTHING"
+    )
     conn.commit()
     conn.close()
 
@@ -94,6 +100,10 @@ init_db()
 class RegisterModel(BaseModel):
     name: str
     phone: Optional[str] = None
+
+
+class LoginModel(BaseModel):
+    phone: str
 
 
 class AnswerModel(BaseModel):
@@ -115,6 +125,7 @@ class QuestionModel(BaseModel):
 
 class SettingsModel(BaseModel):
     quiz_open_time: Optional[str] = None
+    quiz_close_time: Optional[str] = None
     current_day: Optional[int] = None
 
 
@@ -143,16 +154,20 @@ def get_status():
     current_day = int(get_setting("current_day") or 1)
     quiz_time = get_setting("quiz_open_time") or "21:00"
 
+    close_time_str = get_setting("quiz_close_time") or "22:45"
+
     now = datetime.now()
     hour, minute = map(int, quiz_time.split(":"))
+    close_h, close_m = map(int, close_time_str.split(":"))
     quiz_open = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    quiz_close = now.replace(hour=close_h, minute=close_m, second=0, microsecond=0)
 
-    # Check if quiz is open (within 2 hours after open time)
-    is_open = quiz_open <= now <= quiz_open.replace(hour=min(hour + 2, 23))
+    is_open = quiz_open <= now <= quiz_close
 
     return {
         "current_day": current_day,
         "quiz_open_time": quiz_time,
+        "quiz_close_time": close_time_str,
         "is_open": is_open,
         "server_time": now.isoformat(),
         "total_days": 30,
@@ -164,17 +179,18 @@ def register(data: RegisterModel):
     conn = get_db()
     cur = conn.cursor()
     try:
-        # Check phone uniqueness if provided
-        if data.phone and data.phone.strip():
-            cur.execute(
-                "SELECT id FROM participants WHERE phone=%s", (data.phone.strip(),)
-            )
-            existing = cur.fetchone()
-            if existing:
-                conn.close()
-                raise HTTPException(status_code=400, detail="رقم الجوال مسجّل مسبقاً")
+        if not data.phone or not data.phone.strip():
+            raise HTTPException(status_code=400, detail="رقم الجوال مطلوب للتسجيل")
 
-        phone = data.phone.strip() if data.phone and data.phone.strip() else None
+        phone = data.phone.strip()
+        cur.execute("SELECT id FROM participants WHERE phone=%s", (phone,))
+        existing = cur.fetchone()
+        if existing:
+            conn.close()
+            raise HTTPException(
+                status_code=400, detail="رقم الجوال مسجّل مسبقاً، استخدم تسجيل الدخول"
+            )
+
         cur.execute(
             "INSERT INTO participants (name, phone) VALUES (%s, %s) RETURNING id",
             (data.name.strip(), phone),
@@ -182,13 +198,29 @@ def register(data: RegisterModel):
         participant_id = cur.fetchone()["id"]
         conn.commit()
         conn.close()
-        return {"participant_id": participant_id, "name": data.name}
+        return {"participant_id": participant_id, "name": data.name.strip()}
     except HTTPException:
         conn.close()
         raise
     except Exception as e:
         conn.close()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/login")
+def login(data: LoginModel):
+    if not data.phone or not data.phone.strip():
+        raise HTTPException(status_code=400, detail="رقم الجوال مطلوب")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT id, name FROM participants WHERE phone=%s", (data.phone.strip(),)
+    )
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(status_code=404, detail="رقم الجوال غير مسجّل، سجّل أولاً")
+    return {"participant_id": row["id"], "name": row["name"]}
 
 
 @app.get("/api/questions/{day}")
@@ -250,7 +282,7 @@ def submit_answer(data: AnswerModel):
         )
         conn.commit()
         conn.close()
-        return {"is_correct": bool(is_correct), "correct_answer": correct}
+        return {"status": "ok"}
     except HTTPException:
         conn.close()
         raise
@@ -274,6 +306,22 @@ def get_my_score(participant_id: int):
         "correct": total["correct"],
         "points": total["correct"],
     }
+
+
+@app.get("/api/check-day/{participant_id}/{day}")
+def check_day(participant_id: int, day: int):
+    """Check if participant already answered questions for a given day"""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT COUNT(*) as cnt FROM answers a "
+        "JOIN questions q ON a.question_id = q.id "
+        "WHERE a.participant_id=%s AND q.day=%s",
+        (participant_id, day),
+    )
+    row = cur.fetchone()
+    conn.close()
+    return {"answered": row["cnt"] > 0, "count": row["cnt"]}
 
 
 # --- Admin Routes ---
@@ -387,6 +435,43 @@ def admin_get_questions(day: int, request: Request):
     return result
 
 
+@app.put("/api/admin/questions/{question_id}")
+def update_question(question_id: int, data: QuestionModel, request: Request):
+    verify_admin(request)
+
+    if data.question_type == "multiple_choice":
+        if len(data.options) < 2:
+            raise HTTPException(status_code=400, detail="يجب إضافة خيارين على الأقل")
+        if len(data.options) > 6:
+            raise HTTPException(status_code=400, detail="الحد الأقصى 6 خيارات")
+    elif data.question_type == "true_false":
+        data.options = ["صح", "خطأ"]
+    elif data.question_type == "fill_blank":
+        data.options = []
+    else:
+        raise HTTPException(status_code=400, detail="نوع سؤال غير معروف")
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE questions SET day=%s, question_type=%s, question_text=%s, options=%s, "
+        "correct_answer=%s, category=%s, order_num=%s WHERE id=%s",
+        (
+            data.day,
+            data.question_type,
+            data.question_text,
+            json.dumps(data.options),
+            data.correct_answer,
+            data.category,
+            data.order_num,
+            question_id,
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return {"message": "تم تعديل السؤال"}
+
+
 @app.delete("/api/admin/questions/{question_id}")
 def delete_question(question_id: int, request: Request):
     verify_admin(request)
@@ -408,6 +493,12 @@ def update_settings(data: SettingsModel, request: Request):
             "INSERT INTO quiz_settings (key, value) VALUES ('quiz_open_time', %s) "
             "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
             (data.quiz_open_time,),
+        )
+    if data.quiz_close_time:
+        cur.execute(
+            "INSERT INTO quiz_settings (key, value) VALUES ('quiz_close_time', %s) "
+            "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+            (data.quiz_close_time,),
         )
     if data.current_day is not None:
         cur.execute(
