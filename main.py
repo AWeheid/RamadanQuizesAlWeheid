@@ -1,13 +1,15 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from pydantic import BaseModel
 from typing import Optional
 import json
+import uuid
 import psycopg2
 import psycopg2.extras
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
+import bcrypt
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,6 +28,7 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/ramadan_quiz"
 )
 ADMIN_SECRET = os.getenv("ADMIN_SECRET", "ramadan2026admin")
+SESSION_DAYS = int(os.getenv("SESSION_DAYS", "30"))
 
 # Resolve the public directory relative to this file
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -46,6 +49,7 @@ def init_db():
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             phone TEXT UNIQUE,
+            password_hash TEXT,
             created_at TIMESTAMP DEFAULT NOW()
         )
     """)
@@ -89,6 +93,21 @@ def init_db():
     c.execute(
         "INSERT INTO quiz_settings (key, value) VALUES ('quiz_close_time', '22:45') ON CONFLICT (key) DO NOTHING"
     )
+    # Add password_hash column if it doesn't exist (migration for existing DBs)
+    c.execute("""
+        DO $$ BEGIN
+            ALTER TABLE participants ADD COLUMN password_hash TEXT;
+        EXCEPTION WHEN duplicate_column THEN NULL;
+        END $$;
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            id TEXT PRIMARY KEY,
+            participant_id INTEGER NOT NULL REFERENCES participants(id),
+            created_at TIMESTAMP DEFAULT NOW(),
+            expires_at TIMESTAMP NOT NULL
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -99,18 +118,13 @@ init_db()
 # --- Models ---
 class RegisterModel(BaseModel):
     name: str
-    phone: Optional[str] = None
+    phone: str
+    password: str
 
 
 class LoginModel(BaseModel):
     phone: str
-
-
-class AnswerModel(BaseModel):
-    participant_id: int
-    question_id: int
-    selected_answer: str
-    time_taken: int = 30
+    password: str
 
 
 class QuestionModel(BaseModel):
@@ -130,6 +144,49 @@ class SettingsModel(BaseModel):
 
 
 # --- Helper ---
+def create_session(participant_id: int) -> str:
+    session_id = uuid.uuid4().hex
+    conn = get_db()
+    cur = conn.cursor()
+    expires = datetime.now() + timedelta(days=SESSION_DAYS)
+    cur.execute(
+        "INSERT INTO sessions (id, participant_id, expires_at) VALUES (%s, %s, %s)",
+        (session_id, participant_id, expires),
+    )
+    conn.commit()
+    conn.close()
+    return session_id
+
+
+def verify_player(request: Request) -> dict:
+    session_id = request.cookies.get("session_id", "")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="غير مصرّح")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT s.participant_id, s.expires_at, p.name "
+        "FROM sessions s JOIN participants p ON s.participant_id = p.id "
+        "WHERE s.id = %s",
+        (session_id,),
+    )
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(status_code=401, detail="جلسة غير صالحة")
+    if row["expires_at"] < datetime.now():
+        # Clean up expired session
+        conn2 = get_db()
+        cur2 = conn2.cursor()
+        cur2.execute("DELETE FROM sessions WHERE id=%s", (session_id,))
+        conn2.commit()
+        conn2.close()
+        raise HTTPException(
+            status_code=401, detail="انتهت صلاحية الجلسة، سجّل دخولك مجدداً"
+        )
+    return {"participant_id": row["participant_id"], "name": row["name"]}
+
+
 def verify_admin(request: Request):
     token = request.headers.get("X-Admin-Token", "")
     if token != ADMIN_SECRET:
@@ -191,14 +248,29 @@ def register(data: RegisterModel):
                 status_code=400, detail="رقم الجوال مسجّل مسبقاً، استخدم تسجيل الدخول"
             )
 
+        pw_hash = bcrypt.hashpw(data.password.encode("utf-8"), bcrypt.gensalt()).decode(
+            "utf-8"
+        )
         cur.execute(
-            "INSERT INTO participants (name, phone) VALUES (%s, %s) RETURNING id",
-            (data.name.strip(), phone),
+            "INSERT INTO participants (name, phone, password_hash) VALUES (%s, %s, %s) RETURNING id",
+            (data.name.strip(), phone, pw_hash),
         )
         participant_id = cur.fetchone()["id"]
         conn.commit()
         conn.close()
-        return {"participant_id": participant_id, "name": data.name.strip()}
+        session_id = create_session(participant_id)
+        resp = JSONResponse(
+            {"participant_id": participant_id, "name": data.name.strip()}
+        )
+        resp.set_cookie(
+            key="session_id",
+            value=session_id,
+            max_age=SESSION_DAYS * 86400,
+            httponly=True,
+            samesite="lax",
+            path="/",
+        )
+        return resp
     except HTTPException:
         conn.close()
         raise
@@ -214,13 +286,28 @@ def login(data: LoginModel):
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
-        "SELECT id, name FROM participants WHERE phone=%s", (data.phone.strip(),)
+        "SELECT id, name, password_hash FROM participants WHERE phone=%s",
+        (data.phone.strip(),),
     )
     row = cur.fetchone()
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="رقم الجوال غير مسجّل، سجّل أولاً")
-    return {"participant_id": row["id"], "name": row["name"]}
+    if not row["password_hash"] or not bcrypt.checkpw(
+        data.password.encode("utf-8"), row["password_hash"].encode("utf-8")
+    ):
+        raise HTTPException(status_code=401, detail="كلمة المرور غير صحيحة")
+    session_id = create_session(row["id"])
+    resp = JSONResponse({"participant_id": row["id"], "name": row["name"]})
+    resp.set_cookie(
+        key="session_id",
+        value=session_id,
+        max_age=SESSION_DAYS * 86400,
+        httponly=True,
+        samesite="lax",
+        path="/",
+    )
+    return resp
 
 
 @app.get("/api/questions/{day}")
@@ -243,8 +330,16 @@ def get_questions(day: int):
     return result
 
 
+class AnswerPayload(BaseModel):
+    question_id: int
+    selected_answer: str
+    time_taken: int = 30
+
+
 @app.post("/api/answer")
-def submit_answer(data: AnswerModel):
+def submit_answer(data: AnswerPayload, request: Request):
+    player = verify_player(request)
+    pid = player["participant_id"]
     conn = get_db()
     cur = conn.cursor()
     try:
@@ -273,7 +368,7 @@ def submit_answer(data: AnswerModel):
             "INSERT INTO answers (participant_id, question_id, selected_answer, is_correct, time_taken) "
             "VALUES (%s, %s, %s, %s, %s) ON CONFLICT (participant_id, question_id) DO NOTHING",
             (
-                data.participant_id,
+                pid,
                 data.question_id,
                 data.selected_answer,
                 is_correct,
@@ -291,37 +386,103 @@ def submit_answer(data: AnswerModel):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/my-score/{participant_id}")
-def get_my_score(participant_id: int):
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute(
-        "SELECT COUNT(*) as cnt, COALESCE(SUM(is_correct), 0) as correct FROM answers WHERE participant_id=%s",
-        (participant_id,),
-    )
-    total = cur.fetchone()
-    conn.close()
-    return {
-        "total_answered": total["cnt"],
-        "correct": total["correct"],
-        "points": total["correct"],
-    }
+@app.get("/api/me")
+def get_me(request: Request):
+    """Get current player info from session cookie"""
+    player = verify_player(request)
+    return {"participant_id": player["participant_id"], "name": player["name"]}
 
 
-@app.get("/api/check-day/{participant_id}/{day}")
-def check_day(participant_id: int, day: int):
-    """Check if participant already answered questions for a given day"""
+@app.post("/api/logout")
+def logout(request: Request):
+    """Clear session cookie and delete session from DB"""
+    session_id = request.cookies.get("session_id", "")
+    if session_id:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM sessions WHERE id=%s", (session_id,))
+        conn.commit()
+        conn.close()
+    resp = JSONResponse({"status": "ok"})
+    resp.delete_cookie("session_id", path="/")
+    return resp
+
+
+@app.get("/api/check-day/{day}")
+def check_day(day: int, request: Request):
+    """Check if current player already answered questions for a given day"""
+    player = verify_player(request)
+    pid = player["participant_id"]
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
         "SELECT COUNT(*) as cnt FROM answers a "
         "JOIN questions q ON a.question_id = q.id "
         "WHERE a.participant_id=%s AND q.day=%s",
-        (participant_id, day),
+        (pid, day),
     )
     row = cur.fetchone()
     conn.close()
     return {"answered": row["cnt"] > 0, "count": row["cnt"]}
+
+
+@app.get("/api/my-history")
+def my_history(request: Request):
+    """Get player's quiz history - which days they answered and how many questions"""
+    player = verify_player(request)
+    pid = player["participant_id"]
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT q.day,
+               COUNT(a.id) as answered_count,
+               MIN(a.answered_at) as answered_at
+        FROM answers a
+        JOIN questions q ON a.question_id = q.id
+        WHERE a.participant_id = %s
+        GROUP BY q.day
+        ORDER BY q.day
+    """,
+        (pid,),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    result = []
+    for r in rows:
+        d = dict(r)
+        if d.get("answered_at") and hasattr(d["answered_at"], "isoformat"):
+            d["answered_at"] = d["answered_at"].isoformat()
+        result.append(d)
+    return result
+
+
+@app.get("/api/my-answers/{day}")
+def my_answers(day: int, request: Request):
+    """Get player's answers for a specific day with correct answers revealed"""
+    player = verify_player(request)
+    pid = player["participant_id"]
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT q.id, q.question_text, q.question_type, q.options, q.category, q.order_num,
+               q.correct_answer, a.selected_answer, a.is_correct, a.time_taken
+        FROM answers a
+        JOIN questions q ON a.question_id = q.id
+        WHERE a.participant_id = %s AND q.day = %s
+        ORDER BY q.order_num
+    """,
+        (pid, day),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    result = []
+    for r in rows:
+        d = dict(r)
+        d["options"] = json.loads(d["options"])
+        result.append(d)
+    return result
 
 
 @app.get("/api/leaderboard")
@@ -591,7 +752,35 @@ def serve_admin():
     return FileResponse(os.path.join(PUBLIC_DIR, "admin.html"))
 
 
-# Serve index.html at root
+# Serve index.html at root with injected session data
 @app.get("/")
-def serve_index():
-    return FileResponse(os.path.join(PUBLIC_DIR, "index.html"))
+def serve_index(request: Request):
+    session_id = request.cookies.get("session_id", "")
+    session_data = "null"
+    if session_id:
+        try:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT s.participant_id, s.expires_at, p.name "
+                "FROM sessions s JOIN participants p ON s.participant_id = p.id "
+                "WHERE s.id = %s",
+                (session_id,),
+            )
+            row = cur.fetchone()
+            conn.close()
+            if row and row["expires_at"] >= datetime.now():
+                session_data = json.dumps(
+                    {"participant_id": row["participant_id"], "name": row["name"]}
+                )
+        except Exception:
+            pass
+    html_path = os.path.join(PUBLIC_DIR, "index.html")
+    with open(html_path, "r", encoding="utf-8") as f:
+        html = f.read()
+    html = html.replace(
+        "<script>",
+        f"<script>window.__SESSION__={session_data};",
+        1,
+    )
+    return HTMLResponse(html)

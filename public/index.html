@@ -22,13 +22,11 @@
         --text: #f0e6d3;
         --muted: #8892a4;
       }
-
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
-
       body {
         font-family: "Cairo", sans-serif;
         background: var(--deep);
@@ -36,8 +34,6 @@
         min-height: 100vh;
         overflow-x: hidden;
       }
-
-      /* Stars background */
       body::before {
         content: "";
         position: fixed;
@@ -123,8 +119,6 @@
         pointer-events: none;
         z-index: 0;
       }
-
-      /* Gradient overlay */
       body::after {
         content: "";
         position: fixed;
@@ -140,7 +134,6 @@
         pointer-events: none;
         z-index: 0;
       }
-
       .container {
         position: relative;
         z-index: 1;
@@ -148,8 +141,6 @@
         margin: 0 auto;
         padding: 20px 16px;
       }
-
-      /* Header */
       .header {
         text-align: center;
         padding: 30px 0 20px;
@@ -171,16 +162,10 @@
         }
       }
       .header h1 {
-        /* font-family: "Amiri", serif; */
         font-size: 2.2rem;
         color: var(--gold);
         text-shadow: 0 0 30px rgba(201, 168, 76, 0.4);
         margin-bottom: 4px;
-      }
-      .header .subtitle {
-        color: var(--muted);
-        font-size: 0.9rem;
-        font-weight: 300;
       }
       .day-badge {
         display: inline-block;
@@ -193,8 +178,11 @@
         color: var(--deep);
         letter-spacing: 0.5px;
       }
-
-      /* Card */
+      .welcome-name {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-top: 8px;
+      }
       .card {
         background: var(--card);
         border: 1px solid rgba(201, 168, 76, 0.15);
@@ -224,26 +212,11 @@
           transform: translateY(0);
         }
       }
-
-      .card-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--gold);
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      /* Countdown */
-      .countdown-wrap {
-        text-align: center;
-        padding: 10px 0;
-      }
       .countdown-label {
         color: var(--muted);
         font-size: 0.85rem;
         margin-bottom: 16px;
+        text-align: center;
       }
       .countdown-boxes {
         display: flex;
@@ -259,7 +232,6 @@
         text-align: center;
       }
       .cd-box .num {
-        /* font-family: "Amiri", serif; */
         font-size: 2.2rem;
         font-weight: 700;
         color: var(--gold);
@@ -272,7 +244,6 @@
         margin-top: 4px;
         display: block;
       }
-
       .quiz-open-badge {
         display: flex;
         align-items: center;
@@ -304,8 +275,6 @@
           transform: scale(1.3);
         }
       }
-
-      /* Auth Tabs */
       .auth-tabs {
         display: flex;
         margin-bottom: 20px;
@@ -341,10 +310,46 @@
       .auth-panel.active {
         display: block;
       }
-
-      /* Leaderboard */
-      .leaderboard-section {
-        margin-top: 16px;
+      .menu-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .menu-box {
+        background: var(--card2);
+        border: 1px solid rgba(201, 168, 76, 0.15);
+        border-radius: 16px;
+        padding: 24px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .menu-box:hover {
+        border-color: var(--gold);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(201, 168, 76, 0.15);
+      }
+      .menu-box .menu-icon {
+        font-size: 2rem;
+        margin-bottom: 8px;
+      }
+      .menu-box .menu-label {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .menu-box .menu-desc {
+        font-size: 0.7rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .menu-box.highlight {
+        border-color: rgba(46, 204, 113, 0.4);
+        background: linear-gradient(
+          135deg,
+          rgba(46, 204, 113, 0.08),
+          var(--card2)
+        );
       }
       .lb-title {
         text-align: center;
@@ -391,44 +396,305 @@
         color: var(--muted);
         font-weight: 400;
       }
-
-      /* Already Done Screen */
-      .already-done {
-        text-align: center;
-        padding: 20px 0;
-      }
-      .already-done .icon {
-        font-size: 3rem;
-        margin-bottom: 12px;
-      }
-      .already-done h3 {
+      .back-btn {
+        background: none;
+        border: 1px solid rgba(201, 168, 76, 0.2);
         color: var(--gold);
-        margin-bottom: 8px;
-        font-size: 1.2rem;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: "Cairo", sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+        transition: all 0.2s;
       }
-      .already-done p {
-        color: var(--muted);
-        line-height: 1.7;
+      .back-btn:hover {
+        background: rgba(201, 168, 76, 0.1);
       }
-      .cumulative-score {
+      .back-btn.active-day {
+        background: rgba(201, 168, 76, 0.15);
+        border-color: var(--gold);
+      }
+      .history-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         background: var(--card2);
-        border-radius: 12px;
-        padding: 16px;
-        margin-top: 16px;
-        text-align: center;
-        border: 1px solid rgba(201, 168, 76, 0.15);
+        border-radius: 10px;
+        padding: 12px 14px;
+        border: 1px solid rgba(201, 168, 76, 0.1);
+        margin-bottom: 8px;
       }
-      .cumulative-score .big-num {
-        font-size: 2rem;
-        font-weight: 900;
+      .history-row .day-label {
+        font-weight: 700;
         color: var(--gold);
       }
-      .cumulative-score .label {
+      .history-row .day-info {
         font-size: 0.8rem;
         color: var(--muted);
       }
-
-      /* Form */
+      .history-row .day-action {
+        font-size: 0.8rem;
+        color: var(--gold);
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      .prev-answer-card {
+        background: var(--card2);
+        border-radius: 12px;
+        padding: 14px;
+        border: 1px solid rgba(201, 168, 76, 0.1);
+        margin-bottom: 10px;
+      }
+      .prev-answer-card .pa-q {
+        font-weight: 700;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+      }
+      .prev-answer-card .pa-a {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .logout-btn {
+        background: rgba(231, 76, 60, 0.12);
+        border: 1px solid rgba(231, 76, 60, 0.4);
+        color: #ff6b6b;
+        cursor: pointer;
+        font-family: "Cairo", sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 10px 24px;
+        border-radius: 10px;
+        margin-top: 12px;
+        transition: all 0.2s;
+      }
+      .logout-btn:hover {
+        background: rgba(231, 76, 60, 0.2);
+      }
+      /* Answer Summary */
+      .summary-card {
+        background: var(--card2);
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        border-right: 4px solid var(--muted);
+      }
+      .summary-card.correct {
+        border-right-color: var(--green);
+      }
+      .summary-card.wrong {
+        border-right-color: var(--red);
+      }
+      .summary-q {
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+      }
+      .summary-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        margin-bottom: 4px;
+      }
+      .summary-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .summary-badge.correct {
+        background: rgba(46, 204, 113, 0.15);
+        color: var(--green);
+      }
+      .summary-badge.wrong {
+        background: rgba(231, 76, 60, 0.15);
+        color: var(--red);
+      }
+      .summary-your {
+        color: var(--muted);
+      }
+      .summary-correct-ans {
+        color: var(--gold);
+      }
+      .summary-stats {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin: 16px 0;
+      }
+      .summary-stat {
+        text-align: center;
+      }
+      .summary-stat .num {
+        font-size: 1.6rem;
+        font-weight: 900;
+        display: block;
+      }
+      .summary-stat .lbl {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+      .summary-stat .num.green {
+        color: var(--green);
+      }
+      .summary-stat .num.red {
+        color: var(--red);
+      }
+      /* Skeleton Loading */
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          var(--card2) 25%,
+          rgba(201, 168, 76, 0.08) 50%,
+          var(--card2) 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+      }
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+      .skel-line {
+        height: 16px;
+        margin-bottom: 8px;
+        border-radius: 6px;
+      }
+      .skel-line.w60 {
+        width: 60%;
+        margin-inline: auto;
+      }
+      .skel-line.w40 {
+        width: 40%;
+        margin-inline: auto;
+      }
+      .skel-line.w80 {
+        width: 80%;
+        margin-inline: auto;
+      }
+      .skel-box {
+        height: 48px;
+        border-radius: 10px;
+      }
+      .skel-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+      }
+      .skel-countdown {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 12px;
+      }
+      .skel-countdown .skel-cd-item {
+        width: 70px;
+        height: 64px;
+        border-radius: 12px;
+      }
+      .skel-lb-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+      }
+      .skel-lb-row .skel-rank {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+      }
+      .skel-lb-row .skel-bar {
+        flex: 1;
+        height: 18px;
+        border-radius: 6px;
+      }
+      .skel-lb-row .skel-pts {
+        width: 40px;
+        height: 18px;
+        border-radius: 6px;
+      }
+      /* Popup Modal */
+      .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .popup-box {
+        background: var(--card);
+        border: 1px solid rgba(201, 168, 76, 0.2);
+        border-radius: 20px;
+        padding: 32px 28px;
+        max-width: 360px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        animation: popIn 0.25s ease;
+      }
+      @keyframes popIn {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .popup-icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+      }
+      .popup-title {
+        color: var(--gold);
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .popup-msg {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.7;
+        margin-bottom: 20px;
+      }
+      .popup-btn {
+        background: linear-gradient(135deg, #c9a84c, #f0d080);
+        color: var(--deep);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 32px;
+        font-family: "Cairo", sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .popup-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
       .form-group {
         margin-bottom: 18px;
       }
@@ -440,7 +706,8 @@
         font-weight: 600;
       }
       input[type="text"],
-      input[type="tel"] {
+      input[type="tel"],
+      input[type="password"] {
         width: 100%;
         padding: 14px 16px;
         background: var(--card2);
@@ -463,8 +730,6 @@
         color: var(--muted);
         margin-top: 5px;
       }
-
-      /* Buttons */
       .btn {
         width: 100%;
         padding: 15px;
@@ -475,8 +740,6 @@
         font-weight: 700;
         cursor: pointer;
         transition: all 0.2s;
-        position: relative;
-        overflow: hidden;
       }
       .btn-primary {
         background: linear-gradient(135deg, #c9a84c, #f0d080, #c9a84c);
@@ -494,8 +757,6 @@
         cursor: not-allowed;
         transform: none;
       }
-
-      /* Question */
       .question-header {
         display: flex;
         justify-content: space-between;
@@ -517,8 +778,6 @@
         padding: 4px 12px;
         border-radius: 20px;
       }
-
-      /* Timer */
       .timer-wrap {
         margin-bottom: 20px;
       }
@@ -553,7 +812,6 @@
       .timer-num.danger {
         color: var(--red);
       }
-
       .question-text {
         font-family: "Amiri", serif;
         font-size: 1.25rem;
@@ -566,8 +824,6 @@
         border-radius: 12px;
         border-right: 3px solid var(--gold);
       }
-
-      /* Fill blank input */
       .fill-blank-input {
         width: 100%;
         padding: 14px 18px;
@@ -613,7 +869,6 @@
         cursor: not-allowed;
         transform: none;
       }
-
       .options {
         display: flex;
         flex-direction: column;
@@ -641,14 +896,6 @@
         border-color: var(--gold);
         background: rgba(201, 168, 76, 0.12);
       }
-      .option.correct {
-        border-color: var(--green);
-        background: rgba(46, 204, 113, 0.12);
-      }
-      .option.wrong {
-        border-color: var(--red);
-        background: rgba(231, 76, 60, 0.12);
-      }
       .option.disabled {
         pointer-events: none;
       }
@@ -664,21 +911,11 @@
         font-size: 0.85rem;
         color: var(--gold);
         flex-shrink: 0;
-        transition: all 0.2s;
       }
       .option.selected .option-letter {
         background: var(--gold);
         color: var(--deep);
       }
-      .option.correct .option-letter {
-        background: var(--green);
-        color: white;
-      }
-      .option.wrong .option-letter {
-        background: var(--red);
-        color: white;
-      }
-
       .answer-feedback {
         text-align: center;
         padding: 14px;
@@ -688,68 +925,6 @@
         font-size: 0.95rem;
         display: none;
       }
-      .answer-feedback.correct {
-        background: rgba(46, 204, 113, 0.15);
-        color: var(--green);
-        display: block;
-      }
-      .answer-feedback.wrong {
-        background: rgba(231, 76, 60, 0.15);
-        color: var(--red);
-        display: block;
-      }
-
-      /* Score */
-      .score-display {
-        text-align: center;
-        padding: 20px 0;
-      }
-      .score-circle {
-        width: 140px;
-        height: 140px;
-        border-radius: 50%;
-        background: conic-gradient(var(--gold) var(--pct, 0%), var(--card2) 0%);
-        margin: 0 auto 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-      }
-      .score-circle::before {
-        content: "";
-        width: 110px;
-        height: 110px;
-        border-radius: 50%;
-        background: var(--card);
-        position: absolute;
-      }
-      .score-inner {
-        position: relative;
-        z-index: 1;
-        text-align: center;
-      }
-      .score-num {
-        /* font-family: "Amiri", serif; */
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--gold);
-      }
-      .score-total {
-        font-size: 0.75rem;
-        color: var(--muted);
-      }
-      .score-message {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-top: 8px;
-        color: var(--text);
-      }
-      .score-stars {
-        font-size: 1.8rem;
-        margin-top: 8px;
-      }
-
-      /* Progress bar for quiz */
       .quiz-progress-bar {
         display: flex;
         gap: 4px;
@@ -765,14 +940,9 @@
       .qpb-item.done-correct {
         background: var(--green);
       }
-      .qpb-item.done-wrong {
-        background: var(--red);
-      }
       .qpb-item.active {
         background: var(--gold);
       }
-
-      /* Divider */
       .divider {
         height: 1px;
         background: linear-gradient(
@@ -783,12 +953,9 @@
         );
         margin: 20px 0;
       }
-
       .hidden {
         display: none !important;
       }
-
-      /* Toast */
       .toast {
         position: fixed;
         top: 20px;
@@ -811,7 +978,6 @@
         border-color: rgba(231, 76, 60, 0.4);
         color: #ff8a80;
       }
-
       @media (max-width: 400px) {
         .header h1 {
           font-size: 1.8rem;
@@ -829,55 +995,12 @@
   <body>
     <div class="container">
       <div class="header">
-        <div class="moon">
-          <!-- عائلة الوهيد -->
-          <h1>مسابقة صندوق بذل الرمضانية</h1>
-        </div>
-
+        <div class="moon"><h1>مسابقة صندوق بذل الرمضانية</h1></div>
         <div class="day-badge" id="dayBadge">...</div>
+        <div class="welcome-name hidden" id="welcomeName"></div>
       </div>
 
-      <!-- COUNTDOWN SCREEN -->
-      <div id="screenCountdown" class="card">
-        <p class="countdown-label" id="countdownLabel">
-          تفتح المسابقة الساعة ٩:٠٠ مساءً
-        </p>
-        <div class="countdown-boxes" id="countdownBoxes">
-          <div class="cd-box">
-            <span class="num" id="cdSecs">00</span>
-            <span class="lbl">ثانية</span>
-          </div>
-          <div class="cd-box">
-            <span class="num" id="cdMins">00</span>
-            <span class="lbl">دقيقة</span>
-          </div>
-          <div class="cd-box">
-            <span class="num" id="cdHours">00</span>
-            <span class="lbl">ساعة</span>
-          </div>
-        </div>
-
-        <!-- Leaderboard (shown during countdown) -->
-        <div
-          id="countdownLeaderboard"
-          class="leaderboard-section"
-          style="display: none"
-        >
-          <div class="divider"></div>
-          <h3 class="lb-title">🏆 المتصدرون</h3>
-          <div id="lbList" class="lb-list"></div>
-        </div>
-      </div>
-
-      <!-- QUIZ OPEN BADGE -->
-      <div id="openBadge" class="card hidden">
-        <div class="quiz-open-badge">
-          <div class="pulse-dot"></div>
-          <span>المسابقة متاحة الآن! اشترك قبل انتهاء الوقت</span>
-        </div>
-      </div>
-
-      <!-- AUTH SCREEN (Signup / Login) -->
+      <!-- AUTH SCREEN -->
       <div id="screenAuth" class="card hidden">
         <div class="auth-tabs">
           <button class="auth-tab active" onclick="switchAuthTab('login')">
@@ -887,30 +1010,42 @@
             تسجيل جديد
           </button>
         </div>
-
-        <!-- Login Panel -->
         <div id="panelLogin" class="auth-panel active">
           <div class="form-group">
-            <label>رقم الجوال</label>
-            <input type="tel" id="loginPhone" placeholder="05xxxxxxxx" />
+            <label>رقم الجوال</label
+            ><input type="tel" id="loginPhone" placeholder="05xxxxxxxx" />
+          </div>
+          <div class="form-group">
+            <label>كلمة المرور</label
+            ><input
+              type="password"
+              id="loginPassword"
+              placeholder="أدخل كلمة المرور"
+            />
           </div>
           <button class="btn btn-primary" id="btnLogin" onclick="doLogin()">
             دخول 🚀
           </button>
         </div>
-
-        <!-- Signup Panel -->
         <div id="panelSignup" class="auth-panel">
           <div class="form-group">
-            <label>الاسم الكامل *</label>
-            <input type="text" id="inputName" placeholder="أدخل اسمك هنا" />
+            <label>الاسم الكامل *</label
+            ><input type="text" id="inputName" placeholder="أدخل اسمك هنا" />
           </div>
           <div class="form-group">
-            <label>رقم الجوال *</label>
-            <input type="tel" id="inputPhone" placeholder="05xxxxxxxx" />
+            <label>رقم الجوال *</label
+            ><input type="tel" id="inputPhone" placeholder="05xxxxxxxx" />
             <p class="hint">
               📌 رقم الجوال يُستخدم لتسجيل الدخول لاحقاً، لن يُشارَك مع أحد
             </p>
+          </div>
+          <div class="form-group">
+            <label>كلمة المرور *</label
+            ><input
+              type="password"
+              id="inputPassword"
+              placeholder="اختر كلمة مرور"
+            />
           </div>
           <button
             class="btn btn-primary"
@@ -922,21 +1057,193 @@
         </div>
       </div>
 
-      <!-- ALREADY ANSWERED SCREEN -->
-      <div id="screenAlreadyDone" class="card hidden">
-        <div class="already-done">
-          <div class="icon">✅</div>
-          <h3 id="welcomeBackName">أهلاً بعودتك!</h3>
-          <p>لقد أجبت على أسئلة اليوم 🎉<br />عُد غداً لأسئلة جديدة!</p>
+      <!-- DASHBOARD -->
+      <div id="screenDashboard" class="hidden">
+        <!-- Skeleton for countdown area -->
+        <div id="skelCountdown" class="card">
+          <div class="skeleton skel-line w60" style="margin-bottom: 14px"></div>
+          <div class="skel-countdown">
+            <div class="skeleton skel-cd-item"></div>
+            <div class="skeleton skel-cd-item"></div>
+            <div class="skeleton skel-cd-item"></div>
+          </div>
+        </div>
+        <div id="dashCountdown" class="card hidden">
+          <p class="countdown-label" id="countdownLabel">
+            تفتح المسابقة الساعة ٩:٠٠ مساءً
+          </p>
+          <div class="countdown-boxes">
+            <div class="cd-box">
+              <span class="num" id="cdSecs">00</span
+              ><span class="lbl">ثانية</span>
+            </div>
+            <div class="cd-box">
+              <span class="num" id="cdMins">00</span
+              ><span class="lbl">دقيقة</span>
+            </div>
+            <div class="cd-box">
+              <span class="num" id="cdHours">00</span
+              ><span class="lbl">ساعة</span>
+            </div>
+          </div>
+        </div>
+        <div id="dashOpenBadge" class="card hidden">
+          <div class="quiz-open-badge">
+            <div class="pulse-dot"></div>
+            <span>المسابقة متاحة الآن!</span>
+          </div>
+        </div>
+        <div class="menu-grid">
+          <div class="menu-box highlight" onclick="goToChallenge()">
+            <div class="menu-icon">🎯</div>
+            <div class="menu-label">تحدي اليوم</div>
+            <div class="menu-desc">أجب على أسئلة اليوم</div>
+          </div>
+          <div class="menu-box" onclick="goToLeaderboard()">
+            <div class="menu-icon">🏆</div>
+            <div class="menu-label">المتصدرون</div>
+            <div class="menu-desc">ترتيب المتسابقين</div>
+          </div>
+          <div class="menu-box" onclick="goToHistory()">
+            <div class="menu-icon">📊</div>
+            <div class="menu-label">سجل المشاركات</div>
+            <div class="menu-desc">أيامك السابقة</div>
+          </div>
+          <div class="menu-box" onclick="goToPrevAnswers()">
+            <div class="menu-icon">📝</div>
+            <div class="menu-label">إجاباتي السابقة</div>
+            <div class="menu-desc">راجع إجاباتك</div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 16px">
+          <button class="logout-btn" onclick="doLogout()">تسجيل الخروج</button>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD PAGE -->
+      <div id="screenLeaderboard" class="hidden">
+        <button class="back-btn" onclick="goBack()">→ الرئيسية</button>
+        <div class="card">
+          <h3 class="lb-title">🏆 المتصدرون</h3>
+          <div id="skelLeaderboard">
+            <div class="skel-lb-row">
+              <div class="skeleton skel-rank"></div>
+              <div class="skeleton skel-bar"></div>
+              <div class="skeleton skel-pts"></div>
+            </div>
+            <div class="skel-lb-row">
+              <div class="skeleton skel-rank"></div>
+              <div class="skeleton skel-bar"></div>
+              <div class="skeleton skel-pts"></div>
+            </div>
+            <div class="skel-lb-row">
+              <div class="skeleton skel-rank"></div>
+              <div class="skeleton skel-bar"></div>
+              <div class="skeleton skel-pts"></div>
+            </div>
+            <div class="skel-lb-row">
+              <div class="skeleton skel-rank"></div>
+              <div class="skeleton skel-bar"></div>
+              <div class="skeleton skel-pts"></div>
+            </div>
+            <div class="skel-lb-row">
+              <div class="skeleton skel-rank"></div>
+              <div class="skeleton skel-bar"></div>
+              <div class="skeleton skel-pts"></div>
+            </div>
+          </div>
+          <div id="lbPageList" class="lb-list"></div>
           <p
-            style="
-              color: var(--muted);
-              font-size: 0.85rem;
-              margin-top: 12px;
-              line-height: 1.7;
-            "
+            id="lbEmpty"
+            class="hidden"
+            style="text-align: center; color: var(--muted); padding: 20px 0"
           >
-            🏆 سيتم الإعلان عن الفائزين في اجتماع العيد إن شاء الله
+            لا توجد نتائج بعد
+          </p>
+        </div>
+      </div>
+
+      <!-- HISTORY PAGE -->
+      <div id="screenHistory" class="hidden">
+        <button class="back-btn" onclick="goBack()">→ الرئيسية</button>
+        <div class="card">
+          <h3 class="lb-title">📊 سجل المشاركات</h3>
+          <div id="skelHistory">
+            <div class="skel-lb-row">
+              <div class="skeleton skel-rank"></div>
+              <div class="skeleton skel-bar"></div>
+              <div class="skeleton skel-pts"></div>
+            </div>
+            <div class="skel-lb-row">
+              <div class="skeleton skel-rank"></div>
+              <div class="skeleton skel-bar"></div>
+              <div class="skeleton skel-pts"></div>
+            </div>
+            <div class="skel-lb-row">
+              <div class="skeleton skel-rank"></div>
+              <div class="skeleton skel-bar"></div>
+              <div class="skeleton skel-pts"></div>
+            </div>
+          </div>
+          <div id="historyList"></div>
+          <p
+            id="historyEmpty"
+            class="hidden"
+            style="text-align: center; color: var(--muted); padding: 20px 0"
+          >
+            لم تشارك في أي يوم بعد
+          </p>
+        </div>
+      </div>
+
+      <!-- PREVIOUS ANSWERS PAGE -->
+      <div id="screenPrevAnswers" class="hidden">
+        <button class="back-btn" onclick="goBack()">→ الرئيسية</button>
+        <div class="card">
+          <h3 class="lb-title" id="prevAnswersTitle">📝 إجاباتي السابقة</h3>
+          <div id="skelPrevAnswers">
+            <div
+              style="
+                display: flex;
+                gap: 6px;
+                justify-content: center;
+                margin-bottom: 16px;
+              "
+            >
+              <div
+                class="skeleton"
+                style="width: 50px; height: 32px; border-radius: 8px"
+              ></div>
+              <div
+                class="skeleton"
+                style="width: 50px; height: 32px; border-radius: 8px"
+              ></div>
+              <div
+                class="skeleton"
+                style="width: 50px; height: 32px; border-radius: 8px"
+              ></div>
+            </div>
+            <div class="skeleton skel-line w80"></div>
+            <div class="skeleton skel-line w60"></div>
+            <div class="skeleton skel-line w80"></div>
+          </div>
+          <div
+            id="prevDaySelector"
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 6px;
+              margin-bottom: 16px;
+              justify-content: center;
+            "
+          ></div>
+          <div id="prevAnswersList"></div>
+          <p
+            id="prevAnswersEmpty"
+            class="hidden"
+            style="text-align: center; color: var(--muted); padding: 20px 0"
+          >
+            اختر يوماً لعرض إجاباتك
           </p>
         </div>
       </div>
@@ -963,9 +1270,9 @@
         </div>
       </div>
 
-      <!-- SCORE SCREEN (Thank you, no points shown) -->
-      <div id="screenScore" class="card hidden">
-        <div style="text-align: center; padding: 30px 0">
+      <!-- SCORE SCREEN -->
+      <div id="screenScore" class="hidden">
+        <div class="card" style="text-align: center; padding: 30px 0">
           <div style="font-size: 3.5rem; margin-bottom: 16px">🎉</div>
           <h2
             style="color: var(--gold); margin-bottom: 12px; font-size: 1.4rem"
@@ -977,35 +1284,47 @@
               color: var(--text);
               font-size: 1.05rem;
               line-height: 1.8;
-              margin-bottom: 20px;
+              margin-bottom: 10px;
             "
           >
-            تم تسجيل إجاباتك بنجاح<br />
-            نحن نحسب نقاطك ونجمعها كل يوم
+            تم تسجيل إجاباتك بنجاح
           </p>
-          <div class="divider"></div>
-          <p
+          <div class="summary-stats" id="summaryStats"></div>
+        </div>
+        <div class="card" id="summaryContainer" style="margin-top: 12px">
+          <h3
             style="
-              color: var(--muted);
-              font-size: 0.9rem;
-              line-height: 1.8;
-              margin-top: 16px;
+              color: var(--gold);
+              font-size: 1rem;
+              margin-bottom: 14px;
+              text-align: center;
             "
           >
-            🏆 سيتم الإعلان عن الفائزين في اجتماع العيد إن شاء الله<br />
-            واصل المشاركة كل يوم لتزيد فرصتك بالفوز!
+            📋 ملخص إجاباتك
+          </h3>
+          <div id="summaryList"></div>
+        </div>
+        <div class="card" style="margin-top: 12px; text-align: center">
+          <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.8">
+            🏆 سيتم الإعلان عن الفائزين في اجتماع العيد إن شاء الله<br />واصل
+            المشاركة كل يوم لتزيد فرصتك بالفوز!
           </p>
+          <button
+            class="btn btn-primary"
+            style="margin-top: 16px"
+            onclick="goBack()"
+          >
+            العودة للرئيسية
+          </button>
         </div>
       </div>
 
-      <!-- Footer -->
       <p
         style="
           text-align: center;
           color: var(--muted);
           font-size: 0.75rem;
           margin-top: 20px;
-          /* padding-bottom: 20px; */
         "
       >
         المسابقة الرمضانية 🌙 | صندوق بذل
@@ -1024,6 +1343,14 @@
     </div>
 
     <div class="toast" id="toast"></div>
+    <div class="popup-overlay hidden" id="popupOverlay" onclick="closePopup()">
+      <div class="popup-box" onclick="event.stopPropagation()">
+        <div class="popup-icon" id="popupIcon"></div>
+        <div class="popup-title" id="popupTitle"></div>
+        <div class="popup-msg" id="popupMsg"></div>
+        <button class="popup-btn" onclick="closePopup()">حسناً</button>
+      </div>
+    </div>
 
     <script>
       const API = "/api";
@@ -1040,8 +1367,31 @@
         quizOpen: false,
         openTime: "21:00",
         closeTime: "22:45",
+        historyDays: [],
       };
 
+      /* --- Session --- */
+      function saveSession(data) {
+        state.participantId = data.participant_id;
+        state.participantName = data.name;
+      }
+      function clearSession() {
+        state.participantId = null;
+        state.participantName = null;
+      }
+
+      /* --- Popup --- */
+      function showPopup(icon, title, msg) {
+        document.getElementById("popupIcon").textContent = icon;
+        document.getElementById("popupTitle").textContent = title;
+        document.getElementById("popupMsg").textContent = msg;
+        document.getElementById("popupOverlay").classList.remove("hidden");
+      }
+      function closePopup() {
+        document.getElementById("popupOverlay").classList.add("hidden");
+      }
+
+      /* --- UI Helpers --- */
       function showToast(msg, type = "") {
         const t = document.getElementById("toast");
         t.textContent = msg;
@@ -1049,11 +1399,24 @@
         t.classList.add("show");
         setTimeout(() => t.classList.remove("show"), 3000);
       }
-
       function pad(n) {
         return String(n).padStart(2, "0");
       }
-
+      function hideAll() {
+        [
+          "screenAuth",
+          "screenDashboard",
+          "screenLeaderboard",
+          "screenHistory",
+          "screenPrevAnswers",
+          "screenQuiz",
+          "screenScore",
+        ].forEach((id) => document.getElementById(id).classList.add("hidden"));
+      }
+      function showScreen(id) {
+        hideAll();
+        document.getElementById(id).classList.remove("hidden");
+      }
       function arabicDay(n) {
         const d = [
           "الأول",
@@ -1090,6 +1453,7 @@
         return n <= 30 ? d[n - 1] : n;
       }
 
+      /* --- API --- */
       async function fetchStatus() {
         try {
           const r = await fetch(`${API}/status`);
@@ -1098,119 +1462,22 @@
           state.quizOpen = data.is_open;
           state.openTime = data.quiz_open_time;
           state.closeTime = data.quiz_close_time || "22:45";
-
           document.getElementById("dayBadge").textContent = `اليوم ${arabicDay(
             state.currentDay
-          )} من رمضان `;
+          )} من رمضان`;
           updateCountdownLabel();
+          // Hide countdown skeleton, show real content
+          const sk = document.getElementById("skelCountdown");
+          if (sk) sk.classList.add("hidden");
           return data;
         } catch (e) {
-          // Offline mode - show countdown anyway
+          const sk = document.getElementById("skelCountdown");
+          if (sk) sk.classList.add("hidden");
           return null;
         }
       }
 
-      async function loadLeaderboard() {
-        try {
-          const r = await fetch(`${API}/leaderboard`);
-          const data = await r.json();
-          const wrap = document.getElementById("countdownLeaderboard");
-          const list = document.getElementById("lbList");
-
-          if (!data.length) {
-            wrap.style.display = "none";
-            return;
-          }
-
-          const medals = ["🥇", "🥈", "🥉"];
-          list.innerHTML = data
-            .map((item) => {
-              const medal = item.rank <= 3 ? medals[item.rank - 1] : item.rank;
-              const topClass = item.rank <= 3 ? " top-3" : "";
-              return `<div class="lb-row${topClass}">
-              <div class="lb-rank">${medal}</div>
-              <div class="lb-points">${item.points} <span>نقطة</span></div>
-            </div>`;
-            })
-            .join("");
-
-          wrap.style.display = "";
-        } catch (e) {
-          // Silently fail
-        }
-      }
-
-      function updateCountdownLabel() {
-        const [h, m] = state.openTime.split(":");
-        const ampm = parseInt(h) >= 12 ? "مساءً" : "صباحاً";
-        const h12 = parseInt(h) > 12 ? parseInt(h) - 12 : parseInt(h);
-        document.getElementById(
-          "countdownLabel"
-        ).textContent = `تفتح المسابقة الساعة ${h12}:${m} ${ampm}`;
-      }
-
-      function startCountdown() {
-        // Poll server status every 30 seconds (not every tick)
-        setInterval(() => {
-          fetchStatus().catch(() => null);
-        }, 30000);
-
-        // Update countdown UI every 1 second (client-side only)
-        setInterval(() => {
-          const now = new Date();
-          const [h, m] = state.openTime.split(":");
-          const [ch, cm] = (state.closeTime || "22:45").split(":");
-
-          const openTarget = new Date();
-          openTarget.setHours(parseInt(h), parseInt(m), 0, 0);
-
-          const closeTarget = new Date();
-          closeTarget.setHours(parseInt(ch), parseInt(cm), 0, 0);
-
-          // Quiz is currently open
-          if (now >= openTarget && now <= closeTarget) {
-            if (!state.quizOpen) {
-              state.quizOpen = true;
-              showQuizOpen();
-            }
-            return;
-          }
-
-          // Quiz closed or not yet open - countdown to next open
-          // If past close time today, target is tomorrow's open time
-          let nextOpen = new Date();
-          nextOpen.setHours(parseInt(h), parseInt(m), 0, 0);
-          if (now >= nextOpen) {
-            nextOpen.setDate(nextOpen.getDate() + 1);
-          }
-
-          // If quiz was open but now closed, show countdown screen again
-          if (state.quizOpen && now > closeTarget) {
-            state.quizOpen = false;
-            document.getElementById("screenAuth").classList.add("hidden");
-            document.getElementById("openBadge").classList.add("hidden");
-            document
-              .getElementById("screenCountdown")
-              .classList.remove("hidden");
-          }
-
-          const diff = nextOpen - now;
-          const hours = Math.floor(diff / 3600000);
-          const mins = Math.floor((diff % 3600000) / 60000);
-          const secs = Math.floor((diff % 60000) / 1000);
-
-          document.getElementById("cdHours").textContent = pad(hours);
-          document.getElementById("cdMins").textContent = pad(mins);
-          document.getElementById("cdSecs").textContent = pad(secs);
-        }, 1000);
-      }
-
-      function showQuizOpen() {
-        document.getElementById("screenCountdown").classList.add("hidden");
-        document.getElementById("openBadge").classList.remove("hidden");
-        document.getElementById("screenAuth").classList.remove("hidden");
-      }
-
+      /* --- Auth --- */
       function switchAuthTab(tab) {
         document
           .querySelectorAll(".auth-tab")
@@ -1230,49 +1497,46 @@
           document.getElementById("panelSignup").classList.add("active");
         }
       }
-
       async function doLogin() {
         const phone = document.getElementById("loginPhone").value.trim();
+        const password = document.getElementById("loginPassword").value;
         if (!phone) {
           showToast("الرجاء إدخال رقم الجوال", "error");
           return;
         }
-
+        if (!password) {
+          showToast("الرجاء إدخال كلمة المرور", "error");
+          return;
+        }
         const btn = document.getElementById("btnLogin");
         btn.disabled = true;
         btn.textContent = "جارٍ الدخول...";
-
         try {
           const r = await fetch(`${API}/login`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ phone }),
+            body: JSON.stringify({ phone, password }),
           });
           const data = await r.json();
-
           if (!r.ok) {
             showToast(data.detail || "حدث خطأ", "error");
             btn.disabled = false;
             btn.textContent = "دخول 🚀";
             return;
           }
-
-          state.participantId = data.participant_id;
-          state.participantName = data.name;
-          document.getElementById("screenAuth").classList.add("hidden");
-          document.getElementById("openBadge").classList.add("hidden");
-          await afterAuth();
+          saveSession(data);
+          showDashboard();
         } catch (e) {
           showToast("تعذّر الاتصال بالخادم", "error");
           btn.disabled = false;
           btn.textContent = "دخول 🚀";
         }
       }
-
       async function doRegister() {
         const name = document.getElementById("inputName").value.trim();
         const phone = document.getElementById("inputPhone").value.trim();
-
+        const password = document.getElementById("inputPassword").value;
         if (!name) {
           showToast("الرجاء إدخال اسمك", "error");
           return;
@@ -1281,87 +1545,351 @@
           showToast("رقم الجوال مطلوب للتسجيل", "error");
           return;
         }
-
+        if (!password) {
+          showToast("كلمة المرور مطلوبة", "error");
+          return;
+        }
         const btn = document.getElementById("btnRegister");
         btn.disabled = true;
         btn.textContent = "جارٍ التسجيل...";
-
         try {
           const r = await fetch(`${API}/register`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, phone }),
+            body: JSON.stringify({ name, phone, password }),
           });
           const data = await r.json();
-
           if (!r.ok) {
             showToast(data.detail || "حدث خطأ", "error");
             btn.disabled = false;
             btn.textContent = "سجّل وابدأ المسابقة 🚀";
             return;
           }
-
-          state.participantId = data.participant_id;
-          state.participantName = data.name;
-          document.getElementById("screenAuth").classList.add("hidden");
-          document.getElementById("openBadge").classList.add("hidden");
-          await afterAuth();
+          saveSession(data);
+          showDashboard();
         } catch (e) {
           showToast("تعذّر الاتصال بالخادم", "error");
           btn.disabled = false;
           btn.textContent = "سجّل وابدأ المسابقة 🚀";
         }
       }
-
-      async function afterAuth() {
-        // Hide auth screen + badge (already hidden in doLogin/doRegister, but be safe)
-        document.getElementById("screenAuth").classList.add("hidden");
-        document.getElementById("openBadge").classList.add("hidden");
-
-        // Check if already answered today
+      async function doLogout() {
         try {
-          const checkR = await fetch(
-            `${API}/check-day/${state.participantId}/${state.currentDay}`
-          );
-          const checkData = await checkR.json();
+          await fetch(`${API}/logout`, {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch (e) {}
+        clearSession();
+        // Reset auth form buttons
+        const bl = document.getElementById("btnLogin");
+        bl.disabled = false;
+        bl.textContent = "دخول 🚀";
+        const br = document.getElementById("btnRegister");
+        br.disabled = false;
+        br.textContent = "سجّل وابدأ المسابقة 🚀";
+        // Clear form inputs
+        document.getElementById("loginPhone").value = "";
+        document.getElementById("loginPassword").value = "";
+        document.getElementById("inputName").value = "";
+        document.getElementById("inputPhone").value = "";
+        document.getElementById("inputPassword").value = "";
+        showScreen("screenAuth");
+        document.getElementById("welcomeName").classList.add("hidden");
+      }
 
-          if (checkData.answered) {
-            document.getElementById("welcomeBackName").textContent = `أهلاً ${
-              state.participantName || ""
-            } 👋`;
-            document
-              .getElementById("screenAlreadyDone")
-              .classList.remove("hidden");
+      /* --- Dashboard --- */
+      function showDashboard() {
+        showScreen("screenDashboard");
+        const wn = document.getElementById("welcomeName");
+        wn.textContent = `أهلاً ${state.participantName || ""} 👋`;
+        wn.classList.remove("hidden");
+        startCountdown();
+      }
+      function updateCountdownLabel() {
+        const [h, m] = state.openTime.split(":");
+        const ampm = parseInt(h) >= 12 ? "مساءً" : "صباحاً";
+        const h12 = parseInt(h) > 12 ? parseInt(h) - 12 : parseInt(h);
+        document.getElementById(
+          "countdownLabel"
+        ).textContent = `تفتح المسابقة الساعة ${h12}:${m} ${ampm}`;
+      }
+      let countdownStarted = false;
+      function tickCountdown() {
+        const sk = document.getElementById("skelCountdown");
+        const skelVisible = sk && !sk.classList.contains("hidden");
+        const now = new Date();
+        const [h, m] = state.openTime.split(":");
+        const [ch, cm] = (state.closeTime || "22:45").split(":");
+        const openT = new Date();
+        openT.setHours(parseInt(h), parseInt(m), 0, 0);
+        const closeT = new Date();
+        closeT.setHours(parseInt(ch), parseInt(cm), 0, 0);
+        if (now >= openT && now <= closeT) {
+          state.quizOpen = true;
+          document.getElementById("dashCountdown").classList.add("hidden");
+          if (!skelVisible)
+            document.getElementById("dashOpenBadge").classList.remove("hidden");
+          return;
+        }
+        state.quizOpen = false;
+        if (!skelVisible)
+          document.getElementById("dashCountdown").classList.remove("hidden");
+        document.getElementById("dashOpenBadge").classList.add("hidden");
+        let nextOpen = new Date();
+        nextOpen.setHours(parseInt(h), parseInt(m), 0, 0);
+        if (now >= nextOpen) nextOpen.setDate(nextOpen.getDate() + 1);
+        const diff = nextOpen - now;
+        document.getElementById("cdHours").textContent = pad(
+          Math.floor(diff / 3600000)
+        );
+        document.getElementById("cdMins").textContent = pad(
+          Math.floor((diff % 3600000) / 60000)
+        );
+        document.getElementById("cdSecs").textContent = pad(
+          Math.floor((diff % 60000) / 1000)
+        );
+      }
+      function startCountdown() {
+        if (countdownStarted) return;
+        countdownStarted = true;
+        tickCountdown(); // Run immediately — no 1s delay
+        setInterval(() => {
+          fetchStatus().catch(() => null);
+        }, 30000);
+        setInterval(tickCountdown, 1000);
+      }
+
+      /* --- Navigation --- */
+      function goBack() {
+        showScreen("screenDashboard");
+      }
+
+      async function goToChallenge() {
+        if (!state.quizOpen) {
+          showToast("المسابقة غير متاحة حالياً، انتظر وقت الافتتاح", "error");
+          return;
+        }
+        try {
+          const r = await fetch(`${API}/check-day/${state.currentDay}`, {
+            credentials: "include",
+          });
+          if (r.status === 401) {
+            doLogout();
+            showToast("انتهت الجلسة، سجّل دخولك مجدداً", "error");
             return;
           }
-        } catch (e) {
-          // If check fails, proceed to quiz anyway
-        }
-
+          const data = await r.json();
+          if (data.answered) {
+            showPopup(
+              "✅",
+              "أجبت على أسئلة اليوم!",
+              "لقد أجبت على تحدي اليوم بالفعل 🎉\nعُد غداً لأسئلة جديدة!"
+            );
+            return;
+          }
+        } catch (e) {}
         await loadAndStartQuiz();
       }
 
+      async function goToLeaderboard() {
+        showScreen("screenLeaderboard");
+        const sk = document.getElementById("skelLeaderboard");
+        sk.classList.remove("hidden");
+        document.getElementById("lbPageList").innerHTML = "";
+        document.getElementById("lbEmpty").classList.add("hidden");
+        try {
+          const r = await fetch(`${API}/leaderboard`);
+          const data = await r.json();
+          sk.classList.add("hidden");
+          const list = document.getElementById("lbPageList");
+          const empty = document.getElementById("lbEmpty");
+          if (!data.length) {
+            list.innerHTML = "";
+            empty.classList.remove("hidden");
+            return;
+          }
+          empty.classList.add("hidden");
+          const medals = ["🥇", "🥈", "🥉"];
+          list.innerHTML = data
+            .map((item) => {
+              const medal = item.rank <= 3 ? medals[item.rank - 1] : item.rank;
+              const tc = item.rank <= 3 ? " top-3" : "";
+              return `<div class="lb-row${tc}"><div class="lb-rank">${medal}</div><div class="lb-points">${item.points} <span>نقطة</span></div></div>`;
+            })
+            .join("");
+        } catch (e) {
+          sk.classList.add("hidden");
+          showToast("تعذّر تحميل المتصدرين", "error");
+        }
+      }
+
+      async function goToHistory() {
+        showScreen("screenHistory");
+        const sk = document.getElementById("skelHistory");
+        sk.classList.remove("hidden");
+        document.getElementById("historyList").innerHTML = "";
+        document.getElementById("historyEmpty").classList.add("hidden");
+        try {
+          const r = await fetch(`${API}/my-history`, {
+            credentials: "include",
+          });
+          sk.classList.add("hidden");
+          if (r.status === 401) {
+            doLogout();
+            showToast("انتهت الجلسة", "error");
+            return;
+          }
+          const data = await r.json();
+          state.historyDays = data;
+          const list = document.getElementById("historyList");
+          const empty = document.getElementById("historyEmpty");
+          if (!data.length) {
+            list.innerHTML = "";
+            empty.classList.remove("hidden");
+            return;
+          }
+          empty.classList.add("hidden");
+          list.innerHTML = data
+            .map(
+              (d) =>
+                `<div class="history-row"><div><div class="day-label">اليوم ${arabicDay(
+                  d.day
+                )}</div><div class="day-info">${
+                  d.answered_count
+                } إجابة</div></div><div class="day-action" onclick="viewDayAnswers(${
+                  d.day
+                })">عرض الإجابات</div></div>`
+            )
+            .join("");
+        } catch (e) {
+          sk.classList.add("hidden");
+          showToast("تعذّر تحميل السجل", "error");
+        }
+      }
+
+      async function goToPrevAnswers() {
+        showScreen("screenPrevAnswers");
+        const sk = document.getElementById("skelPrevAnswers");
+        sk.classList.remove("hidden");
+        document.getElementById("prevDaySelector").innerHTML = "";
+        document.getElementById("prevAnswersList").innerHTML = "";
+        document.getElementById("prevAnswersEmpty").classList.add("hidden");
+        try {
+          const r = await fetch(`${API}/my-history`, {
+            credentials: "include",
+          });
+          if (r.status === 401) {
+            doLogout();
+            showToast("انتهت الجلسة", "error");
+            return;
+          }
+          const data = await r.json();
+          sk.classList.add("hidden");
+          state.historyDays = data;
+          const sel = document.getElementById("prevDaySelector");
+          const list = document.getElementById("prevAnswersList");
+          const empty = document.getElementById("prevAnswersEmpty");
+          if (!data.length) {
+            sel.innerHTML = "";
+            list.innerHTML = "";
+            empty.classList.remove("hidden");
+            empty.textContent = "لم تشارك في أي يوم بعد";
+            return;
+          }
+          empty.classList.remove("hidden");
+          empty.textContent = "اختر يوماً لعرض إجاباتك";
+          list.innerHTML = "";
+          sel.innerHTML = data
+            .map(
+              (d) =>
+                `<button class="back-btn" style="margin:0;" onclick="viewDayAnswers(${d.day})">اليوم ${d.day}</button>`
+            )
+            .join("");
+        } catch (e) {
+          sk.classList.add("hidden");
+          showToast("تعذّر التحميل", "error");
+        }
+      }
+
+      async function viewDayAnswers(day) {
+        showScreen("screenPrevAnswers");
+        document.getElementById(
+          "prevAnswersTitle"
+        ).textContent = `📝 إجاباتي - اليوم ${arabicDay(day)}`;
+        const sel = document.getElementById("prevDaySelector");
+        sel.innerHTML = state.historyDays
+          .map(
+            (d) =>
+              `<button class="back-btn${
+                d.day === day ? " active-day" : ""
+              }" style="margin:0;" onclick="viewDayAnswers(${d.day})">اليوم ${
+                d.day
+              }</button>`
+          )
+          .join("");
+        const list = document.getElementById("prevAnswersList");
+        const empty = document.getElementById("prevAnswersEmpty");
+        try {
+          const r = await fetch(`${API}/my-answers/${day}`, {
+            credentials: "include",
+          });
+          if (r.status === 401) {
+            doLogout();
+            showToast("انتهت الجلسة", "error");
+            return;
+          }
+          const data = await r.json();
+          if (!data.length) {
+            list.innerHTML = "";
+            empty.classList.remove("hidden");
+            empty.textContent = "لا توجد إجابات لهذا اليوم";
+            return;
+          }
+          empty.classList.add("hidden");
+          const arabicLetters = ["أ", "ب", "ج", "د", "هـ", "و"];
+          list.innerHTML = data
+            .map((a, i) => {
+              let ansText = a.selected_answer;
+              if (
+                a.question_type !== "fill_blank" &&
+                a.options &&
+                a.options.length
+              ) {
+                const idx = parseInt(a.selected_answer);
+                if (!isNaN(idx) && a.options[idx]) ansText = a.options[idx];
+              }
+              return `<div class="prev-answer-card"><div class="pa-q">${
+                i + 1
+              }. ${a.question_text}</div><div class="pa-a">إجابتك: ${
+                ansText || "لم تجب"
+              }</div></div>`;
+            })
+            .join("");
+        } catch (e) {
+          showToast("تعذّر تحميل الإجابات", "error");
+        }
+      }
+
+      /* --- Quiz --- */
       async function loadAndStartQuiz() {
         try {
           const r = await fetch(`${API}/questions/${state.currentDay}`);
           state.questions = await r.json();
-
           if (!state.questions.length) {
             showToast("لا توجد أسئلة لهذا اليوم بعد", "error");
             return;
           }
-
-          document.getElementById("screenAuth").classList.add("hidden");
-          document.getElementById("openBadge").classList.add("hidden");
-          document.getElementById("screenQuiz").classList.remove("hidden");
-
+          showScreen("screenQuiz");
+          state.answers = [];
+          state.currentQ = 0;
           buildProgressBar();
           showQuestion(0);
         } catch (e) {
           showToast("تعذّر تحميل الأسئلة", "error");
         }
       }
-
       function buildProgressBar() {
         const bar = document.getElementById("quizProgressBar");
         bar.innerHTML = "";
@@ -1372,20 +1900,17 @@
           bar.appendChild(d);
         });
       }
-
-      function updateProgressBar(idx, result) {
+      function updateProgressBar(idx) {
         document.querySelectorAll(".qpb-item").forEach((el, i) => {
           el.className = "qpb-item";
           if (i <= idx) el.classList.add("done-correct");
           else if (i === idx + 1) el.classList.add("active");
         });
       }
-
       function showQuestion(idx) {
         const q = state.questions[idx];
         state.currentQ = idx;
         state.timeLeft = 30;
-
         document.getElementById("questionProgress").textContent = `السؤال ${
           idx + 1
         } من ${state.questions.length}`;
@@ -1394,26 +1919,18 @@
             ? "📖 قرآن كريم"
             : q.category === "ramadan"
             ? "🌙 رمضان"
-            : "️ عام";
+            : "عام";
         document.getElementById("questionText").textContent = q.question_text;
         document.getElementById("answerFeedback").className = "answer-feedback";
         document.getElementById("answerFeedback").textContent = "";
-
         const container = document.getElementById("optionsContainer");
         container.innerHTML = "";
-
         const qtype = q.question_type || "multiple_choice";
-
         if (qtype === "fill_blank") {
-          // Render text input for fill-in-the-blank
-          container.innerHTML = `
-      <input type="text" class="fill-blank-input" id="fillBlankInput" placeholder="اكتب إجابتك هنا..." onkeydown="if(event.key==='Enter')submitFillBlank()" />
-      <button class="fill-blank-submit" id="fillBlankBtn" onclick="submitFillBlank()">إرسال الإجابة </button>
-    `;
+          container.innerHTML = `<input type="text" class="fill-blank-input" id="fillBlankInput" placeholder="اكتب إجابتك هنا..." onkeydown="if(event.key==='Enter')submitFillBlank()" /><button class="fill-blank-submit" id="fillBlankBtn" onclick="submitFillBlank()">إرسال الإجابة</button>`;
         } else {
-          // Render option buttons (MCQ or True/False)
           const opts = q.options || [];
-          const arabicLetters = ["أ", "ب", "ج", "د", "هـ", "و"];
+          const letters = ["أ", "ب", "ج", "د", "هـ", "و"];
           opts.forEach((text, i) => {
             const div = document.createElement("div");
             div.className = "option";
@@ -1424,19 +1941,16 @@
                 ? i === 0
                   ? "✓"
                   : "✕"
-                : arabicLetters[i] || String(i + 1);
+                : letters[i] || String(i + 1);
             div.innerHTML = `<span class="option-letter">${letter}</span>${text}`;
             container.appendChild(div);
           });
         }
-
         startTimer(q);
       }
-
       function startTimer(q) {
         clearInterval(state.timerInterval);
         updateTimer(30);
-
         state.timerInterval = setInterval(() => {
           state.timeLeft--;
           updateTimer(state.timeLeft);
@@ -1446,20 +1960,16 @@
           }
         }, 1000);
       }
-
       function updateTimer(t) {
         const bar = document.getElementById("timerBar");
         const num = document.getElementById("timerNum");
-        const pct = (t / 30) * 100;
-        bar.style.width = pct + "%";
+        bar.style.width = (t / 30) * 100 + "%";
         num.textContent = t;
-
         bar.className =
           "timer-bar" + (t <= 10 ? " danger" : t <= 15 ? " warning" : "");
         num.className =
           "timer-num" + (t <= 10 ? " danger" : t <= 15 ? " warning" : "");
       }
-
       async function autoAnswer(q) {
         const qtype = q.question_type || "multiple_choice";
         if (qtype === "fill_blank") {
@@ -1472,42 +1982,28 @@
             .querySelectorAll(".option")
             .forEach((el) => el.classList.add("disabled"));
         }
-        await submitAnswer(q.id, "", false, 30);
+        await submitAnswer(q.id, "", 30);
         state.answers.push(false);
-        updateProgressBar(state.currentQ, false);
+        updateProgressBar(state.currentQ);
         setTimeout(() => nextQuestion(), 800);
       }
-
       async function submitFillBlank() {
         const q = state.questions[state.currentQ];
         const inp = document.getElementById("fillBlankInput");
         const btn = document.getElementById("fillBlankBtn");
         const val = inp.value.trim();
-
         if (!val) {
           showToast("اكتب إجابتك أولاً", "error");
           return;
         }
-
         clearInterval(state.timerInterval);
         const timeTaken = 30 - state.timeLeft;
         inp.disabled = true;
         btn.disabled = true;
-
         try {
-          await fetch(`${API}/answer`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              participant_id: state.participantId,
-              question_id: q.id,
-              selected_answer: val,
-              time_taken: timeTaken,
-            }),
-          });
-
+          await submitAnswer(q.id, val, timeTaken);
           state.answers.push(true);
-          updateProgressBar(state.currentQ, true);
+          updateProgressBar(state.currentQ);
           setTimeout(() => nextQuestion(), 800);
         } catch (e) {
           showToast("خطأ في الإرسال", "error");
@@ -1515,83 +2011,105 @@
           btn.disabled = false;
         }
       }
-
       async function selectAnswer(val, q) {
         clearInterval(state.timerInterval);
         const timeTaken = 30 - state.timeLeft;
-
-        // Disable all options
         document
           .querySelectorAll(".option")
           .forEach((el) => el.classList.add("disabled"));
-
-        // Highlight selected (neutral, no correct/wrong)
-        const selectedEl = [...document.querySelectorAll(".option")].find(
+        const sel = [...document.querySelectorAll(".option")].find(
           (el) => el.dataset.index === val
         );
-        if (selectedEl) selectedEl.classList.add("selected");
-
+        if (sel) sel.classList.add("selected");
         try {
-          await fetch(`${API}/answer`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              participant_id: state.participantId,
-              question_id: q.id,
-              selected_answer: val,
-              time_taken: timeTaken,
-            }),
-          });
-
+          await submitAnswer(q.id, val, timeTaken);
           state.answers.push(true);
-          updateProgressBar(state.currentQ, true);
+          updateProgressBar(state.currentQ);
           setTimeout(() => nextQuestion(), 800);
         } catch (e) {
           showToast("خطأ في الإرسال", "error");
         }
       }
-
-      async function submitAnswer(qid, val, isCorrect, timeTaken) {
-        try {
-          await fetch(`${API}/answer`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              participant_id: state.participantId,
-              question_id: qid,
-              selected_answer: val || "none",
-              time_taken: timeTaken,
-            }),
-          });
-        } catch (e) {}
+      async function submitAnswer(qid, val, timeTaken) {
+        await fetch(`${API}/answer`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question_id: qid,
+            selected_answer: val || "none",
+            time_taken: timeTaken,
+          }),
+        });
       }
-
       function nextQuestion() {
         const next = state.currentQ + 1;
-        if (next < state.questions.length) {
-          showQuestion(next);
-        } else {
-          showScore();
+        if (next < state.questions.length) showQuestion(next);
+        else showScore();
+      }
+      async function showScore() {
+        showScreen("screenScore");
+        const statsEl = document.getElementById("summaryStats");
+        const listEl = document.getElementById("summaryList");
+        statsEl.innerHTML = "";
+        listEl.innerHTML =
+          '<div class="skeleton skel-line w80"></div><div class="skeleton skel-line w60"></div><div class="skeleton skel-line w80"></div>';
+        try {
+          const r = await fetch(`${API}/my-answers/${state.currentDay}`, {
+            credentials: "include",
+          });
+          if (!r.ok) throw new Error();
+          const data = await r.json();
+          const correct = data.filter((a) => a.is_correct === 1).length;
+          const wrong = data.length - correct;
+          statsEl.innerHTML = `
+            <div class="summary-stat"><span class="num">${data.length}</span><span class="lbl">إجمالي الأسئلة</span></div>
+            <div class="summary-stat"><span class="num green">${correct}</span><span class="lbl">إجابة صحيحة</span></div>
+            <div class="summary-stat"><span class="num red">${wrong}</span><span class="lbl">إجابة خاطئة</span></div>
+          `;
+          listEl.innerHTML = data
+            .map((a, i) => {
+              const isCorrect = a.is_correct === 1;
+              const cls = isCorrect ? "correct" : "wrong";
+              const badgeText = isCorrect ? "✓ صحيحة" : "✕ خاطئة";
+              let yourAns = a.selected_answer || "لم تجب";
+              let correctAns = a.correct_answer || "";
+              const opts = a.options || [];
+              if (a.question_type !== "fill_blank" && opts.length) {
+                const idx = parseInt(a.selected_answer);
+                if (!isNaN(idx) && opts[idx]) yourAns = opts[idx];
+                const cIdx = parseInt(a.correct_answer);
+                if (!isNaN(cIdx) && opts[cIdx]) correctAns = opts[cIdx];
+              }
+              let html = `<div class="summary-card ${cls}">`;
+              html += `<div class="summary-q">${i + 1}. ${
+                a.question_text
+              }</div>`;
+              html += `<div class="summary-row"><span class="summary-badge ${cls}">${badgeText}</span><span class="summary-your">إجابتك: ${yourAns}</span></div>`;
+              if (!isCorrect) {
+                html += `<div class="summary-row"><span class="summary-correct-ans">✓ الإجابة الصحيحة: ${correctAns}</span></div>`;
+              }
+              html += `</div>`;
+              return html;
+            })
+            .join("");
+        } catch (e) {
+          listEl.innerHTML =
+            '<p style="text-align:center;color:var(--muted)">تعذّر تحميل الملخص</p>';
         }
       }
 
-      function showScore() {
-        document.getElementById("screenQuiz").classList.add("hidden");
-        document.getElementById("screenScore").classList.remove("hidden");
+      /* --- Init --- */
+      // Show correct screen IMMEDIATELY (sync, no waiting)
+      if (window.__SESSION__) {
+        saveSession(window.__SESSION__);
+        showDashboard();
+      } else {
+        clearSession();
+        showScreen("screenAuth");
       }
-
-      // Init
-      async function init() {
-        const status = await fetchStatus();
-        startCountdown();
-        loadLeaderboard();
-
-        if (status && status.is_open) {
-          showQuizOpen();
-        }
-      }
-
-      init();
+      // Then fetch status in background to update countdown/open state
+      fetchStatus().catch(() => null);
     </script>
   </body>
 </html>
