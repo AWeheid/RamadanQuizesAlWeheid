@@ -1726,6 +1726,39 @@
         wn.textContent = `أهلاً ${state.participantName || ""} 👋`;
         wn.classList.remove("hidden");
         startCountdown();
+        initPushNotifications();
+      }
+
+      async function initPushNotifications() {
+        if (!("serviceWorker" in navigator) || !("PushManager" in window))
+          return;
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          const existing = await reg.pushManager.getSubscription();
+          if (existing) return;
+          const r = await fetch(`${API}/vapid-public-key`);
+          if (!r.ok) return;
+          const { public_key } = await r.json();
+          const padding = "=".repeat((4 - (public_key.length % 4)) % 4);
+          const raw = atob(
+            public_key.replace(/-/g, "+").replace(/_/g, "/") + padding
+          );
+          const key = new Uint8Array([...raw].map((c) => c.charCodeAt(0)));
+          const perm = await Notification.requestPermission();
+          if (perm !== "granted") return;
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: key,
+          });
+          await fetch(`${API}/push/subscribe`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ subscription: sub.toJSON() }),
+          });
+        } catch (e) {
+          // Push not supported or denied — fail silently
+        }
       }
       function updateCountdownLabel() {
         const [h, m] = state.openTime.split(":");

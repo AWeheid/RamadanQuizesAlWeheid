@@ -761,6 +761,40 @@
                 </button>
               </div>
             </div>
+
+            <div class="section-card" style="margin-top: 20px">
+              <div class="section-title">📢 إرسال إشعار للمشاركين</div>
+              <div
+                class="settings-row"
+                style="flex-direction: column; gap: 12px"
+              >
+                <div class="form-group" style="width: 100%">
+                  <label>عنوان الإشعار</label>
+                  <input
+                    type="text"
+                    id="pushTitle"
+                    placeholder="مثال: المسابقة مفتوحة الآن!"
+                  />
+                </div>
+                <div class="form-group" style="width: 100%">
+                  <label>نص الإشعار</label>
+                  <input
+                    type="text"
+                    id="pushBody"
+                    placeholder="مثال: سارع بالإجابة واكسب النقاط!"
+                  />
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px">
+                  <button class="btn btn-gold" onclick="sendPushNotification()">
+                    📤 إرسال للجميع
+                  </button>
+                  <span
+                    id="pushResult"
+                    style="font-size: 0.85rem; color: var(--muted)"
+                  ></span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1288,6 +1322,35 @@
           if (data.current_day)
             document.getElementById("settDay").value = data.current_day;
         } catch (e) {}
+      }
+
+      async function sendPushNotification() {
+        const title = document.getElementById("pushTitle").value.trim();
+        const body = document.getElementById("pushBody").value.trim();
+        const result = document.getElementById("pushResult");
+        if (!title || !body) {
+          result.style.color = "var(--red)";
+          result.textContent = "⚠️ يرجى تعبئة العنوان والنص";
+          return;
+        }
+        result.style.color = "var(--muted)";
+        result.textContent = "جاري الإرسال...";
+        try {
+          const r = await fetch(`${API}/admin/push/send`, {
+            method: "POST",
+            headers: adminHeaders(),
+            body: JSON.stringify({ title, body }),
+          });
+          if (!r.ok) throw new Error();
+          const data = await r.json();
+          result.style.color = "var(--green)";
+          result.textContent = `✅ تم الإرسال إلى ${data.sent} مشترك${
+            data.removed ? ` (تم حذف ${data.removed} اشتراك منتهي)` : ""
+          }`;
+        } catch (e) {
+          result.style.color = "var(--red)";
+          result.textContent = "❌ خطأ في الإرسال";
+        }
       }
 
       async function saveSettings() {

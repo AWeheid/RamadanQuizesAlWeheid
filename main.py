@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 import os
 import bcrypt
 from dotenv import load_dotenv
+from pywebpush import webpush, WebPushException
 
 load_dotenv()
 
@@ -30,6 +31,9 @@ DATABASE_URL = os.getenv(
 )
 ADMIN_SECRET = os.getenv("ADMIN_SECRET", "ramadan2026admin")
 SESSION_DAYS = int(os.getenv("SESSION_DAYS", "30"))
+VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
+VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
+VAPID_CLAIMS_EMAIL = os.getenv("VAPID_CLAIMS_EMAIL", "mailto:admin@bazl.app")
 
 # Resolve the public directory relative to this file
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -114,6 +118,15 @@ def init_db():
             participant_id INTEGER NOT NULL REFERENCES participants(id),
             created_at TIMESTAMP DEFAULT NOW(),
             expires_at TIMESTAMP NOT NULL
+        )
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS push_subscriptions (
+            id SERIAL PRIMARY KEY,
+            participant_id INTEGER NOT NULL REFERENCES participants(id),
+            subscription_json TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(participant_id, subscription_json)
         )
     """)
     conn.commit()
@@ -755,6 +768,70 @@ def export_data(request: Request):
                 d[k] = v.isoformat()
         result.append(d)
     return result
+
+
+# --- Push Notifications ---
+@app.get("/api/vapid-public-key")
+def get_vapid_public_key():
+    return {"public_key": VAPID_PUBLIC_KEY}
+
+
+class PushSubscriptionModel(BaseModel):
+    subscription: dict
+
+
+@app.post("/api/push/subscribe")
+def push_subscribe(data: PushSubscriptionModel, request: Request):
+    player = verify_player(request)
+    sub_json = json.dumps(data.subscription)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO push_subscriptions (participant_id, subscription_json) "
+        "VALUES (%s, %s) ON CONFLICT (participant_id, subscription_json) DO NOTHING",
+        (player["participant_id"], sub_json),
+    )
+    conn.commit()
+    conn.close()
+    return {"message": "تم تفعيل الإشعارات"}
+
+
+class PushMessageModel(BaseModel):
+    title: str
+    body: str
+
+
+@app.post("/api/admin/push/send")
+def admin_send_push(data: PushMessageModel, request: Request):
+    verify_admin(request)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT id, subscription_json FROM push_subscriptions")
+    subs = cur.fetchall()
+    sent = 0
+    failed_ids = []
+    for sub in subs:
+        try:
+            webpush(
+                subscription_info=json.loads(sub["subscription_json"]),
+                data=json.dumps(
+                    {"title": data.title, "body": data.body}, ensure_ascii=False
+                ),
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims={"sub": VAPID_CLAIMS_EMAIL},
+            )
+            sent += 1
+        except WebPushException as e:
+            if e.response and e.response.status_code in (404, 410):
+                failed_ids.append(sub["id"])
+            else:
+                failed_ids.append(sub["id"])
+    # Clean up invalid subscriptions
+    if failed_ids:
+        cur.execute("DELETE FROM push_subscriptions WHERE id = ANY(%s)", (failed_ids,))
+    conn.commit()
+    conn.close()
+    return {"sent": sent, "removed": len(failed_ids)}
 
 
 # --- Static file serving ---

@@ -45,3 +45,32 @@ self.addEventListener("fetch", (e) => {
       .catch(() => caches.match(e.request))
   );
 });
+
+// Push — show notification
+self.addEventListener("push", (e) => {
+  const data = e.data ? e.data.json() : {};
+  const title = data.title || "مسابقة بذل الرمضانية";
+  const options = {
+    body: data.body || "لديك إشعار جديد!",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/favicon-32.png",
+    dir: "rtl",
+    lang: "ar",
+  };
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Notification click — open/focus app
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  e.waitUntil(
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((list) => {
+        for (const c of list) {
+          if (c.url.includes("/") && "focus" in c) return c.focus();
+        }
+        return clients.openWindow("/");
+      })
+  );
+});
