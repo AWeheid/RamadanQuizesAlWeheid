@@ -592,7 +592,7 @@
                   <select id="qCat">
                     <option value="quran">📖 قرآن كريم</option>
                     <option value="ramadan">🌙 رمضان</option>
-                    <option value="general">☪️ عام</option>
+                    <option value="general">عام</option>
                   </select>
                 </div>
                 <div class="form-group" style="margin: 0">
@@ -1056,7 +1056,7 @@
         const catLabel = {
           quran: "📖 قرآن",
           ramadan: "🌙 رمضان",
-          general: "☪️ عام",
+          general: "عام",
         };
         const typeMap = {
           multiple_choice: { cls: "type-mcq", label: "📝 اختيار متعدد" },
@@ -1119,7 +1119,7 @@
             <span class="type-badge ${typeInfo.cls}">${typeInfo.label}</span>
             <span class="correct-badge ${
               catMap[q.category] || "cat-general"
-            }">${catLabel[q.category] || "☪️ عام"}</span>
+            }">${catLabel[q.category] || "️ عام"}</span>
           </div>
           <div style="display:flex;gap:6px">
             <button class="btn btn-blue btn-sm" onclick='editQuestion(${JSON.stringify(

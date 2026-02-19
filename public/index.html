@@ -884,7 +884,7 @@
             🔑 تسجيل الدخول
           </button>
           <button class="auth-tab" onclick="switchAuthTab('signup')">
-            ✨ تسجيل جديد
+            تسجيل جديد
           </button>
         </div>
 
@@ -1008,7 +1008,7 @@
           /* padding-bottom: 20px; */
         "
       >
-        رمضان كريم 🌙 | صندوق بذل
+        المسابقة الرمضانية 🌙 | صندوق بذل
       </p>
       <p
         style="
@@ -1101,7 +1101,7 @@
 
           document.getElementById("dayBadge").textContent = `اليوم ${arabicDay(
             state.currentDay
-          )} من رمضان ✨`;
+          )} من رمضان `;
           updateCountdownLabel();
           return data;
         } catch (e) {
@@ -1394,7 +1394,7 @@
             ? "📖 قرآن كريم"
             : q.category === "ramadan"
             ? "🌙 رمضان"
-            : "☪️ عام";
+            : "️ عام";
         document.getElementById("questionText").textContent = q.question_text;
         document.getElementById("answerFeedback").className = "answer-feedback";
         document.getElementById("answerFeedback").textContent = "";
@@ -1408,7 +1408,7 @@
           // Render text input for fill-in-the-blank
           container.innerHTML = `
       <input type="text" class="fill-blank-input" id="fillBlankInput" placeholder="اكتب إجابتك هنا..." onkeydown="if(event.key==='Enter')submitFillBlank()" />
-      <button class="fill-blank-submit" id="fillBlankBtn" onclick="submitFillBlank()">إرسال الإجابة ✨</button>
+      <button class="fill-blank-submit" id="fillBlankBtn" onclick="submitFillBlank()">إرسال الإجابة </button>
     `;
         } else {
           // Render option buttons (MCQ or True/False)
