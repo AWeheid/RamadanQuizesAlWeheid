@@ -100,6 +100,13 @@ def init_db():
         EXCEPTION WHEN duplicate_column THEN NULL;
         END $$;
     """)
+    # Add points column for speed-based scoring
+    c.execute("""
+        DO $$ BEGIN
+            ALTER TABLE answers ADD COLUMN points INTEGER DEFAULT 0;
+        EXCEPTION WHEN duplicate_column THEN NULL;
+        END $$;
+    """)
     c.execute("""
         CREATE TABLE IF NOT EXISTS sessions (
             id TEXT PRIMARY KEY,
@@ -364,15 +371,19 @@ def submit_answer(data: AnswerPayload, request: Request):
         else:
             is_correct = 1 if data.selected_answer == correct else 0
 
+        # Speed-based scoring: correct = max(10, 100 - time_taken*3), wrong = 0
+        points = max(10, 100 - data.time_taken * 3) if is_correct else 0
+
         cur.execute(
-            "INSERT INTO answers (participant_id, question_id, selected_answer, is_correct, time_taken) "
-            "VALUES (%s, %s, %s, %s, %s) ON CONFLICT (participant_id, question_id) DO NOTHING",
+            "INSERT INTO answers (participant_id, question_id, selected_answer, is_correct, time_taken, points) "
+            "VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (participant_id, question_id) DO NOTHING",
             (
                 pid,
                 data.question_id,
                 data.selected_answer,
                 is_correct,
                 data.time_taken,
+                points,
             ),
         )
         conn.commit()
@@ -467,7 +478,7 @@ def my_answers(day: int, request: Request):
     cur.execute(
         """
         SELECT q.id, q.question_text, q.question_type, q.options, q.category, q.order_num,
-               q.correct_answer, a.selected_answer, a.is_correct, a.time_taken
+               q.correct_answer, a.selected_answer, a.is_correct, a.time_taken, a.points
         FROM answers a
         JOIN questions q ON a.question_id = q.id
         WHERE a.participant_id = %s AND q.day = %s
@@ -492,7 +503,7 @@ def public_leaderboard():
     cur = conn.cursor()
     cur.execute("""
         SELECT
-            COALESCE(SUM(a.is_correct), 0) as points,
+            COALESCE(SUM(a.points), 0) as points,
             COUNT(a.id) as total_answered
         FROM participants p
         LEFT JOIN answers a ON p.id = a.participant_id
@@ -526,7 +537,7 @@ def get_leaderboard(request: Request):
     cur.execute("""
         SELECT p.id, p.name, p.phone, p.created_at,
                COUNT(a.id) as total_answered,
-               COALESCE(SUM(a.is_correct), 0) as points,
+               COALESCE(SUM(a.points), 0) as points,
                COUNT(DISTINCT CASE WHEN a.is_correct=1 THEN DATE(a.answered_at) END) as days_won
         FROM participants p
         LEFT JOIN answers a ON p.id = a.participant_id

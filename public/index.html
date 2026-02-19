@@ -2062,10 +2062,11 @@
           const data = await r.json();
           const correct = data.filter((a) => a.is_correct === 1).length;
           const wrong = data.length - correct;
+          const totalPts = data.reduce((s, a) => s + (a.points || 0), 0);
           statsEl.innerHTML = `
-            <div class="summary-stat"><span class="num">${data.length}</span><span class="lbl">إجمالي الأسئلة</span></div>
-            <div class="summary-stat"><span class="num green">${correct}</span><span class="lbl">إجابة صحيحة</span></div>
-            <div class="summary-stat"><span class="num red">${wrong}</span><span class="lbl">إجابة خاطئة</span></div>
+            <div class="summary-stat"><span class="num" style="color:var(--gold)">${totalPts}</span><span class="lbl">مجموع النقاط</span></div>
+            <div class="summary-stat"><span class="num green">${correct}</span><span class="lbl">صحيحة</span></div>
+            <div class="summary-stat"><span class="num red">${wrong}</span><span class="lbl">خاطئة</span></div>
           `;
           listEl.innerHTML = data
             .map((a, i) => {
@@ -2081,11 +2082,12 @@
                 const cIdx = parseInt(a.correct_answer);
                 if (!isNaN(cIdx) && opts[cIdx]) correctAns = opts[cIdx];
               }
+              const pts = a.points || 0;
               let html = `<div class="summary-card ${cls}">`;
               html += `<div class="summary-q">${i + 1}. ${
                 a.question_text
               }</div>`;
-              html += `<div class="summary-row"><span class="summary-badge ${cls}">${badgeText}</span><span class="summary-your">إجابتك: ${yourAns}</span></div>`;
+              html += `<div class="summary-row"><span class="summary-badge ${cls}">${badgeText}</span><span class="summary-your">إجابتك: ${yourAns}</span><span style="margin-right:auto;color:var(--gold);font-weight:700;font-size:0.8rem">+${pts}</span></div>`;
               if (!isCorrect) {
                 html += `<div class="summary-row"><span class="summary-correct-ans">✓ الإجابة الصحيحة: ${correctAns}</span></div>`;
               }
