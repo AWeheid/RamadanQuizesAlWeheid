@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 import json
@@ -757,6 +758,28 @@ def export_data(request: Request):
 
 
 # --- Static file serving ---
+# PWA assets
+@app.get("/manifest.json")
+def serve_manifest():
+    return FileResponse(
+        os.path.join(PUBLIC_DIR, "manifest.json"),
+        media_type="application/manifest+json",
+    )
+
+
+@app.get("/sw.js")
+def serve_sw():
+    return FileResponse(
+        os.path.join(PUBLIC_DIR, "sw.js"), media_type="application/javascript"
+    )
+
+
+# Serve icons directory
+app.mount(
+    "/icons", StaticFiles(directory=os.path.join(PUBLIC_DIR, "icons")), name="icons"
+)
+
+
 # Serve admin.html at /admin
 @app.get("/admin")
 def serve_admin():

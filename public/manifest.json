@@ -1,0 +1,31 @@
+{
+  "name": "مسابقة صندوق بذل الوهيد الرمضانية",
+  "short_name": "بذل",
+  "description": "مسابقة رمضانية يومية - أجب بسرعة واكسب النقاط!",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0a0f1e",
+  "background_color": "#0a0f1e",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

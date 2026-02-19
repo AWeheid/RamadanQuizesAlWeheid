@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>مسابقة صندوق ( بذل ) الوهيد الرمضانية 🌙</title>
+    <meta name="theme-color" content="#0a0f1e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="بذل" />
+    <link rel="manifest" href="/manifest.json" />
+    <link
+      rel="icon"
+      href="/icons/favicon-32.png"
+      type="image/png"
+      sizes="32x32"
+    />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link
       href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap"
       rel="stylesheet"
@@ -995,7 +1010,19 @@
   <body>
     <div class="container">
       <div class="header">
-        <div class="moon"><h1>مسابقة صندوق بذل الرمضانية</h1></div>
+        <div class="moon">
+          <!-- <img
+            src="/icons/icon-192.png"
+            alt="بذل"
+            style="
+              width: 80px;
+              height: 80px;
+              display: block;
+              margin: 0 auto 8px;
+            "
+          /> -->
+          <h1>مسابقة صندوق بذل الرمضانية</h1>
+        </div>
         <div class="day-badge" id="dayBadge">...</div>
         <div class="welcome-name hidden" id="welcomeName"></div>
       </div>
@@ -2205,6 +2232,11 @@
       }
       // Then fetch status in background to update countdown/open state
       fetchStatus().catch(() => null);
+
+      // Register service worker for PWA
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      }
     </script>
   </body>
 </html>
