@@ -324,6 +324,36 @@ def check_day(participant_id: int, day: int):
     return {"answered": row["cnt"] > 0, "count": row["cnt"]}
 
 
+@app.get("/api/leaderboard")
+def public_leaderboard():
+    """Public leaderboard - anonymous (no names), top 10 by points"""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT
+            COALESCE(SUM(a.is_correct), 0) as points,
+            COUNT(a.id) as total_answered
+        FROM participants p
+        LEFT JOIN answers a ON p.id = a.participant_id
+        GROUP BY p.id
+        HAVING COUNT(a.id) > 0
+        ORDER BY points DESC, total_answered DESC
+        LIMIT 10
+    """)
+    rows = cur.fetchall()
+    conn.close()
+    result = []
+    for i, r in enumerate(rows):
+        result.append(
+            {
+                "rank": i + 1,
+                "points": r["points"],
+                "total_answered": r["total_answered"],
+            }
+        )
+    return result
+
+
 # --- Admin Routes ---
 
 

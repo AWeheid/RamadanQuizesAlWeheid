@@ -342,6 +342,56 @@
         display: block;
       }
 
+      /* Leaderboard */
+      .leaderboard-section {
+        margin-top: 16px;
+      }
+      .lb-title {
+        text-align: center;
+        color: var(--gold);
+        font-size: 1rem;
+        margin-bottom: 12px;
+      }
+      .lb-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .lb-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--card2);
+        border-radius: 10px;
+        padding: 10px 14px;
+        border: 1px solid rgba(201, 168, 76, 0.1);
+      }
+      .lb-row.top-3 {
+        border-color: rgba(201, 168, 76, 0.3);
+        background: linear-gradient(
+          135deg,
+          rgba(201, 168, 76, 0.08),
+          rgba(201, 168, 76, 0.02)
+        );
+      }
+      .lb-rank {
+        font-weight: 900;
+        font-size: 1.1rem;
+        color: var(--gold);
+        min-width: 32px;
+        text-align: center;
+      }
+      .lb-points {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 0.95rem;
+      }
+      .lb-points span {
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-weight: 400;
+      }
+
       /* Already Done Screen */
       .already-done {
         text-align: center;
@@ -806,6 +856,17 @@
             <span class="lbl">ساعة</span>
           </div>
         </div>
+
+        <!-- Leaderboard (shown during countdown) -->
+        <div
+          id="countdownLeaderboard"
+          class="leaderboard-section"
+          style="display: none"
+        >
+          <div class="divider"></div>
+          <h3 class="lb-title">🏆 المتصدرون</h3>
+          <div id="lbList" class="lb-list"></div>
+        </div>
       </div>
 
       <!-- QUIZ OPEN BADGE -->
@@ -1046,6 +1107,36 @@
         } catch (e) {
           // Offline mode - show countdown anyway
           return null;
+        }
+      }
+
+      async function loadLeaderboard() {
+        try {
+          const r = await fetch(`${API}/leaderboard`);
+          const data = await r.json();
+          const wrap = document.getElementById("countdownLeaderboard");
+          const list = document.getElementById("lbList");
+
+          if (!data.length) {
+            wrap.style.display = "none";
+            return;
+          }
+
+          const medals = ["🥇", "🥈", "🥉"];
+          list.innerHTML = data
+            .map((item) => {
+              const medal = item.rank <= 3 ? medals[item.rank - 1] : item.rank;
+              const topClass = item.rank <= 3 ? " top-3" : "";
+              return `<div class="lb-row${topClass}">
+              <div class="lb-rank">${medal}</div>
+              <div class="lb-points">${item.points} <span>نقطة</span></div>
+            </div>`;
+            })
+            .join("");
+
+          wrap.style.display = "";
+        } catch (e) {
+          // Silently fail
         }
       }
 
@@ -1493,6 +1584,7 @@
       async function init() {
         const status = await fetchStatus();
         startCountdown();
+        loadLeaderboard();
 
         if (status && status.is_open) {
           showQuizOpen();
