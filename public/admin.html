@@ -10,17 +10,22 @@
     />
     <style>
       :root {
-        --gold: #c9a84c;
-        --gold-light: #f0d080;
-        --deep: #0a0f1e;
-        --deep2: #111827;
-        --card: #161d2f;
-        --card2: #1e2740;
-        --green: #2ecc71;
+        --green: #24775b;
+        --green-dark: #1a5742;
+        --green-light: #3a9e7a;
+        --gold: #b07d2e;
+        --gold-light: #d4a03a;
+        --bg: #f7f9f8;
+        --deep: #f7f9f8;
+        --deep2: #eef2f0;
+        --card: #ffffff;
+        --card2: rgba(36, 119, 91, 0.04);
         --red: #e74c3c;
         --blue: #3498db;
-        --text: #f0e6d3;
-        --muted: #8892a4;
+        --text: #1a2e25;
+        --text-mid: #3d5c4f;
+        --muted: #7a9e90;
+        --white: #ffffff;
       }
       * {
         margin: 0;
@@ -29,7 +34,7 @@
       }
       body {
         font-family: "Cairo", sans-serif;
-        background: var(--deep);
+        background: var(--bg);
         color: var(--text);
         min-height: 100vh;
       }
@@ -43,16 +48,17 @@
         padding: 20px;
       }
       .login-box {
-        background: var(--card);
-        border: 1px solid rgba(201, 168, 76, 0.2);
+        background: var(--white);
+        border: 1px solid rgba(36, 119, 91, 0.15);
         border-radius: 20px;
         padding: 40px;
         width: 100%;
         max-width: 400px;
         text-align: center;
+        box-shadow: 0 8px 40px rgba(36, 119, 91, 0.1);
       }
       .login-box h2 {
-        color: var(--gold);
+        color: var(--green);
         margin-bottom: 24px;
         font-size: 1.5rem;
       }
@@ -64,8 +70,8 @@
       }
       .sidebar {
         width: 240px;
-        background: var(--card);
-        border-left: 1px solid rgba(201, 168, 76, 0.1);
+        background: var(--white);
+        border-left: 1px solid rgba(36, 119, 91, 0.1);
         padding: 20px 0;
         flex-shrink: 0;
         position: fixed;
@@ -73,11 +79,12 @@
         overflow-y: auto;
         left: 0;
         top: 0;
+        box-shadow: 4px 0 20px rgba(36, 119, 91, 0.06);
       }
       .sidebar-logo {
         text-align: center;
         padding: 16px 20px 24px;
-        border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+        border-bottom: 1px solid rgba(36, 119, 91, 0.1);
         margin-bottom: 16px;
       }
       .sidebar-logo .moon {
@@ -85,7 +92,7 @@
       }
       .sidebar-logo h3 {
         font-size: 0.9rem;
-        color: var(--gold);
+        color: var(--green);
         margin-top: 6px;
       }
       .nav-item {
@@ -101,12 +108,12 @@
         border-radius: 10px;
       }
       .nav-item:hover {
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.06);
         color: var(--text);
       }
       .nav-item.active {
-        background: rgba(201, 168, 76, 0.15);
-        color: var(--gold);
+        background: rgba(36, 119, 91, 0.1);
+        color: var(--green);
       }
       .nav-icon {
         font-size: 1.1rem;
@@ -131,16 +138,17 @@
         margin-bottom: 24px;
       }
       .stat-card {
-        background: var(--card);
-        border: 1px solid rgba(201, 168, 76, 0.1);
+        background: var(--white);
+        border: 1px solid rgba(36, 119, 91, 0.1);
         border-radius: 16px;
         padding: 20px;
         text-align: center;
+        box-shadow: 0 2px 12px rgba(36, 119, 91, 0.06);
       }
       .stat-card .val {
         font-size: 2rem;
         font-weight: 700;
-        color: var(--gold);
+        color: var(--green);
       }
       .stat-card .lbl {
         font-size: 0.8rem;
@@ -150,20 +158,21 @@
 
       /* Table */
       .table-wrap {
-        background: var(--card);
-        border: 1px solid rgba(201, 168, 76, 0.1);
+        background: var(--white);
+        border: 1px solid rgba(36, 119, 91, 0.1);
         border-radius: 16px;
         overflow: hidden;
+        box-shadow: 0 2px 12px rgba(36, 119, 91, 0.06);
       }
       .table-header {
         padding: 16px 20px;
-        border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+        border-bottom: 1px solid rgba(36, 119, 91, 0.1);
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
       .table-header h3 {
-        color: var(--gold);
+        color: var(--green);
         font-size: 1rem;
       }
       table {
@@ -175,16 +184,16 @@
         text-align: right;
         font-size: 0.8rem;
         color: var(--muted);
-        background: var(--card2);
-        border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+        background: rgba(36, 119, 91, 0.04);
+        border-bottom: 1px solid rgba(36, 119, 91, 0.08);
       }
       td {
         padding: 12px 16px;
         font-size: 0.85rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid rgba(36, 119, 91, 0.05);
       }
       tr:hover td {
-        background: rgba(201, 168, 76, 0.03);
+        background: rgba(36, 119, 91, 0.03);
       }
 
       /* Medal */
@@ -211,15 +220,15 @@
         color: #fff;
       }
       .rank-other {
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.06);
         color: var(--muted);
       }
 
       .points-badge {
         display: inline-block;
         padding: 3px 12px;
-        background: rgba(201, 168, 76, 0.15);
-        color: var(--gold);
+        background: rgba(36, 119, 91, 0.1);
+        color: var(--green);
         border-radius: 20px;
         font-weight: 700;
         font-size: 0.85rem;
@@ -247,8 +256,8 @@
       textarea {
         width: 100%;
         padding: 11px 14px;
-        background: var(--card2);
-        border: 1px solid rgba(201, 168, 76, 0.2);
+        background: rgba(36, 119, 91, 0.04);
+        border: 1px solid rgba(36, 119, 91, 0.15);
         border-radius: 10px;
         color: var(--text);
         font-family: "Cairo", sans-serif;
@@ -261,14 +270,14 @@
       input:focus,
       select:focus,
       textarea:focus {
-        border-color: var(--gold);
+        border-color: var(--green);
       }
       textarea {
         resize: vertical;
         min-height: 80px;
       }
       select option {
-        background: var(--card2);
+        background: var(--white);
       }
 
       .btn {
@@ -282,8 +291,8 @@
         transition: all 0.2s;
       }
       .btn-gold {
-        background: linear-gradient(135deg, #c9a84c, #f0d080);
-        color: var(--deep);
+        background: linear-gradient(135deg, var(--green), var(--green-light));
+        color: #fff;
       }
       .btn-gold:hover {
         opacity: 0.9;
@@ -308,11 +317,11 @@
       }
       .btn-outline {
         background: transparent;
-        border: 1px dashed rgba(201, 168, 76, 0.4);
-        color: var(--gold);
+        border: 1px dashed rgba(36, 119, 91, 0.3);
+        color: var(--green);
       }
       .btn-outline:hover {
-        background: rgba(201, 168, 76, 0.1);
+        background: rgba(36, 119, 91, 0.06);
       }
 
       .day-tabs {
@@ -326,29 +335,30 @@
         border-radius: 20px;
         font-size: 0.8rem;
         cursor: pointer;
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.04);
         color: var(--muted);
         border: 1px solid transparent;
         transition: all 0.2s;
       }
       .day-tab.active {
-        background: rgba(201, 168, 76, 0.15);
-        color: var(--gold);
-        border-color: rgba(201, 168, 76, 0.3);
+        background: rgba(36, 119, 91, 0.1);
+        color: var(--green);
+        border-color: rgba(36, 119, 91, 0.25);
       }
       .day-tab:hover {
         color: var(--text);
       }
 
       .section-card {
-        background: var(--card);
-        border: 1px solid rgba(201, 168, 76, 0.1);
+        background: var(--white);
+        border: 1px solid rgba(36, 119, 91, 0.1);
         border-radius: 16px;
         padding: 20px;
         margin-bottom: 20px;
+        box-shadow: 0 2px 12px rgba(36, 119, 91, 0.06);
       }
       .section-title {
-        color: var(--gold);
+        color: var(--green);
         font-size: 1rem;
         font-weight: 700;
         margin-bottom: 16px;
@@ -366,7 +376,7 @@
         color: var(--green);
       }
       .cat-ramadan {
-        background: rgba(201, 168, 76, 0.15);
+        background: rgba(176, 125, 46, 0.15);
         color: var(--gold);
       }
       .cat-general {
@@ -448,7 +458,84 @@
         width: 20px;
         height: 20px;
         cursor: pointer;
-        accent-color: var(--gold);
+        accent-color: var(--green);
+      }
+
+      /* Responsive */
+      @media (max-width: 900px) {
+        .sidebar {
+          position: fixed;
+          bottom: 0;
+          top: auto;
+          left: 0;
+          right: 0;
+          width: 100%;
+          height: auto;
+          display: flex;
+          flex-direction: row;
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding: 0;
+          z-index: 100;
+          border-left: none;
+          border-top: 1px solid rgba(36, 119, 91, 0.1);
+          box-shadow: 0 -4px 20px rgba(36, 119, 91, 0.08);
+        }
+        .sidebar-logo {
+          display: none;
+        }
+        .nav-item {
+          flex-direction: column;
+          gap: 2px;
+          padding: 10px 14px;
+          margin: 0;
+          border-radius: 0;
+          font-size: 0.7rem;
+          white-space: nowrap;
+          min-width: fit-content;
+        }
+        .nav-icon {
+          font-size: 1.2rem;
+        }
+        .main {
+          margin-right: 0;
+          padding: 16px;
+          padding-bottom: 80px;
+        }
+        .layout {
+          flex-direction: column;
+        }
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+        .settings-row {
+          flex-direction: column;
+          gap: 12px;
+        }
+        .settings-row .form-group {
+          width: 100%;
+        }
+        .table-wrap {
+          overflow-x: auto;
+        }
+        table {
+          min-width: 500px;
+        }
+      }
+      @media (max-width: 480px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+        .main {
+          padding: 10px;
+          padding-bottom: 80px;
+        }
+        h2 {
+          font-size: 1.2rem;
+        }
       }
 
       /* Scrollbar */
@@ -459,7 +546,7 @@
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: rgba(201, 168, 76, 0.2);
+        background: rgba(36, 119, 91, 0.2);
         border-radius: 3px;
       }
     </style>
@@ -527,7 +614,7 @@
         <div class="main">
           <!-- Overview -->
           <div id="page-overview" class="page active">
-            <h2 style="color: var(--gold); margin-bottom: 20px">
+            <h2 style="color: var(--green); margin-bottom: 20px">
               نظرة عامة 📊
             </h2>
             <div class="stats-grid" id="statsGrid">
@@ -566,7 +653,7 @@
 
           <!-- Questions -->
           <div id="page-questions" class="page">
-            <h2 style="color: var(--gold); margin-bottom: 20px">
+            <h2 style="color: var(--green); margin-bottom: 20px">
               إدارة الأسئلة ❓
             </h2>
 
@@ -678,7 +765,7 @@
 
           <!-- Leaderboard -->
           <div id="page-leaderboard" class="page">
-            <h2 style="color: var(--gold); margin-bottom: 20px">
+            <h2 style="color: var(--green); margin-bottom: 20px">
               المتصدرون 🏆
             </h2>
             <div class="table-wrap">
@@ -706,7 +793,7 @@
 
           <!-- Participants -->
           <div id="page-participants" class="page">
-            <h2 style="color: var(--gold); margin-bottom: 20px">
+            <h2 style="color: var(--green); margin-bottom: 20px">
               المشاركون 👥
             </h2>
             <div class="table-wrap">
@@ -734,7 +821,7 @@
 
           <!-- Settings -->
           <div id="page-settings" class="page">
-            <h2 style="color: var(--gold); margin-bottom: 20px">
+            <h2 style="color: var(--green); margin-bottom: 20px">
               الإعدادات ⚙️
             </h2>
             <div class="section-card">

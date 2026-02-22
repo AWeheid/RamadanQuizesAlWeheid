@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>مسابقة صندوق ( بذل ) الوهيد الرمضانية 🌙</title>
-    <meta name="theme-color" content="#0a0f1e" />
+    <meta name="theme-color" content="#f7f9f8" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
@@ -20,22 +20,27 @@
     />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&display=swap&family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        --gold: #c9a84c;
-        --gold-light: #f0d080;
+        --green: #24775b;
+        --green-dark: #1a5742;
+        --green-light: #3a9e7a;
+        --gold: #b07d2e;
+        --gold-light: #d4a03a;
         --gold-dark: #8b6914;
-        --deep: #0a0f1e;
-        --deep2: #111827;
-        --card: #161d2f;
-        --card2: #1e2740;
-        --green: #2ecc71;
+        --bg: #f7f9f8;
+        --deep: #f7f9f8;
+        --deep2: #eef2f0;
+        --card: #ffffff;
+        --card2: rgba(36, 119, 91, 0.04);
         --red: #e74c3c;
-        --text: #f0e6d3;
-        --muted: #8892a4;
+        --text: #1a2e25;
+        --text-mid: #3d5c4f;
+        --muted: #7a9e90;
+        --white: #ffffff;
       }
       * {
         margin: 0;
@@ -44,110 +49,23 @@
       }
       body {
         font-family: "Cairo", sans-serif;
-        background: var(--deep);
+        background: var(--bg);
         color: var(--text);
         min-height: 100vh;
         overflow-x: hidden;
+        position: relative;
       }
-      body::before {
-        content: "";
+      .pattern-bg {
         position: fixed;
-        top: 0;
-        left: 0;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+      }
+      .pattern-bg svg {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
-        background-image: radial-gradient(
-            1px 1px at 10% 15%,
-            rgba(255, 255, 255, 0.8) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 30% 25%,
-            rgba(255, 255, 255, 0.6) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 55% 10%,
-            rgba(255, 255, 255, 0.9) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 75% 20%,
-            rgba(255, 255, 255, 0.7) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 90% 8%,
-            rgba(255, 255, 255, 0.8) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 20% 45%,
-            rgba(255, 255, 255, 0.5) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 45% 55%,
-            rgba(255, 255, 255, 0.7) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 65% 40%,
-            rgba(255, 255, 255, 0.6) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 85% 50%,
-            rgba(255, 255, 255, 0.8) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 5% 70%,
-            rgba(255, 255, 255, 0.6) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 35% 80%,
-            rgba(255, 255, 255, 0.7) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 60% 75%,
-            rgba(255, 255, 255, 0.5) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 80% 85%,
-            rgba(255, 255, 255, 0.8) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 15% 90%,
-            rgba(255, 255, 255, 0.6) 0%,
-            transparent 100%
-          ),
-          radial-gradient(
-            1px 1px at 50% 95%,
-            rgba(255, 255, 255, 0.7) 0%,
-            transparent 100%
-          );
-        pointer-events: none;
-        z-index: 0;
-      }
-      body::after {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-          ellipse at 50% 0%,
-          rgba(201, 168, 76, 0.08) 0%,
-          transparent 60%
-        );
-        pointer-events: none;
-        z-index: 0;
       }
       .container {
         position: relative;
@@ -177,21 +95,23 @@
         }
       }
       .header h1 {
+        font-family: "IBM Plex Sans Arabic", serif;
         font-size: 2.2rem;
-        color: var(--gold);
-        text-shadow: 0 0 30px rgba(201, 168, 76, 0.4);
+        color: var(--green);
+        text-shadow: 0 2px 12px rgba(36, 119, 91, 0.15);
         margin-bottom: 4px;
       }
       .day-badge {
         display: inline-block;
         margin-top: 12px;
         padding: 6px 20px;
-        background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+        background: linear-gradient(135deg, var(--green), var(--green-light));
         border-radius: 20px;
         font-size: 0.85rem;
         font-weight: 700;
-        color: var(--deep);
+        color: #fff;
         letter-spacing: 0.5px;
+        box-shadow: 0 4px 14px rgba(36, 119, 91, 0.3);
       }
       .welcome-name {
         color: var(--muted);
@@ -199,13 +119,15 @@
         margin-top: 8px;
       }
       .card {
-        background: var(--card);
-        border: 1px solid rgba(201, 168, 76, 0.15);
-        border-radius: 20px;
+        background: var(--white);
+        border: 1px solid rgba(36, 119, 91, 0.1);
+        border-radius: 18px;
         padding: 28px 24px;
         margin-bottom: 16px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 24px rgba(36, 119, 91, 0.08);
         animation: fadeUp 0.6s ease;
+        position: relative;
+        overflow: hidden;
       }
       @keyframes fadeUp {
         from {
@@ -239,17 +161,18 @@
         gap: 12px;
       }
       .cd-box {
-        background: var(--card2);
-        border: 1px solid rgba(201, 168, 76, 0.2);
+        background: rgba(36, 119, 91, 0.04);
+        border: 1px solid rgba(36, 119, 91, 0.12);
         border-radius: 12px;
         padding: 16px 20px;
         min-width: 72px;
         text-align: center;
       }
       .cd-box .num {
+        font-family: "IBM Plex Sans Arabic", serif;
         font-size: 2.2rem;
         font-weight: 700;
-        color: var(--gold);
+        color: var(--green);
         line-height: 1;
         display: block;
       }
@@ -295,7 +218,7 @@
         margin-bottom: 20px;
         border-radius: 12px;
         overflow: hidden;
-        border: 1px solid rgba(201, 168, 76, 0.2);
+        border: 1px solid rgba(36, 119, 91, 0.15);
       }
       .auth-tab {
         flex: 1;
@@ -305,7 +228,7 @@
         font-weight: 700;
         font-size: 0.9rem;
         transition: all 0.2s;
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.04);
         color: var(--muted);
         border: none;
         font-family: "Cairo", sans-serif;
@@ -313,11 +236,11 @@
       .auth-tab.active {
         background: linear-gradient(
           135deg,
-          rgba(201, 168, 76, 0.2),
-          rgba(201, 168, 76, 0.1)
+          rgba(36, 119, 91, 0.12),
+          rgba(36, 119, 91, 0.06)
         );
-        color: var(--gold);
-        border-bottom: 2px solid var(--gold);
+        color: var(--green);
+        border-bottom: 2px solid var(--green);
       }
       .auth-panel {
         display: none;
@@ -331,18 +254,19 @@
         gap: 12px;
       }
       .menu-box {
-        background: var(--card2);
-        border: 1px solid rgba(201, 168, 76, 0.15);
+        background: var(--white);
+        border: 1px solid rgba(36, 119, 91, 0.12);
         border-radius: 16px;
         padding: 24px 16px;
         text-align: center;
         cursor: pointer;
         transition: all 0.2s;
+        box-shadow: 0 2px 12px rgba(36, 119, 91, 0.06);
       }
       .menu-box:hover {
-        border-color: var(--gold);
+        border-color: var(--green);
         transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(201, 168, 76, 0.15);
+        box-shadow: 0 4px 16px rgba(36, 119, 91, 0.15);
       }
       .menu-box .menu-icon {
         font-size: 2rem;
@@ -359,16 +283,16 @@
         margin-top: 4px;
       }
       .menu-box.highlight {
-        border-color: rgba(46, 204, 113, 0.4);
+        border-color: rgba(36, 119, 91, 0.3);
         background: linear-gradient(
           135deg,
-          rgba(46, 204, 113, 0.08),
-          var(--card2)
+          rgba(36, 119, 91, 0.08),
+          var(--white)
         );
       }
       .lb-title {
         text-align: center;
-        color: var(--gold);
+        color: var(--green);
         font-size: 1rem;
         margin-bottom: 12px;
       }
@@ -381,23 +305,23 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.03);
         border-radius: 10px;
         padding: 10px 14px;
-        border: 1px solid rgba(201, 168, 76, 0.1);
+        border: 1px solid rgba(36, 119, 91, 0.08);
       }
       .lb-row.top-3 {
-        border-color: rgba(201, 168, 76, 0.3);
+        border-color: rgba(36, 119, 91, 0.25);
         background: linear-gradient(
           135deg,
-          rgba(201, 168, 76, 0.08),
-          rgba(201, 168, 76, 0.02)
+          rgba(36, 119, 91, 0.08),
+          rgba(36, 119, 91, 0.02)
         );
       }
       .lb-rank {
         font-weight: 900;
         font-size: 1.1rem;
-        color: var(--gold);
+        color: var(--green);
         min-width: 32px;
         text-align: center;
       }
@@ -413,8 +337,8 @@
       }
       .back-btn {
         background: none;
-        border: 1px solid rgba(201, 168, 76, 0.2);
-        color: var(--gold);
+        border: 1px solid rgba(36, 119, 91, 0.2);
+        color: var(--green);
         padding: 8px 16px;
         border-radius: 10px;
         cursor: pointer;
@@ -425,25 +349,25 @@
         transition: all 0.2s;
       }
       .back-btn:hover {
-        background: rgba(201, 168, 76, 0.1);
+        background: rgba(36, 119, 91, 0.08);
       }
       .back-btn.active-day {
-        background: rgba(201, 168, 76, 0.15);
-        border-color: var(--gold);
+        background: rgba(36, 119, 91, 0.12);
+        border-color: var(--green);
       }
       .history-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.03);
         border-radius: 10px;
         padding: 12px 14px;
-        border: 1px solid rgba(201, 168, 76, 0.1);
+        border: 1px solid rgba(36, 119, 91, 0.08);
         margin-bottom: 8px;
       }
       .history-row .day-label {
         font-weight: 700;
-        color: var(--gold);
+        color: var(--green);
       }
       .history-row .day-info {
         font-size: 0.8rem;
@@ -451,15 +375,15 @@
       }
       .history-row .day-action {
         font-size: 0.8rem;
-        color: var(--gold);
+        color: var(--green);
         cursor: pointer;
         text-decoration: underline;
       }
       .prev-answer-card {
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.03);
         border-radius: 12px;
         padding: 14px;
-        border: 1px solid rgba(201, 168, 76, 0.1);
+        border: 1px solid rgba(36, 119, 91, 0.08);
         margin-bottom: 10px;
       }
       .prev-answer-card .pa-q {
@@ -489,7 +413,7 @@
       }
       /* Answer Summary */
       .summary-card {
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.03);
         padding: 14px 16px;
         margin-bottom: 10px;
         border-right: 4px solid var(--muted);
@@ -531,7 +455,7 @@
         color: var(--muted);
       }
       .summary-correct-ans {
-        color: var(--gold);
+        color: var(--green);
       }
       .summary-stats {
         display: flex;
@@ -561,9 +485,9 @@
       .skeleton {
         background: linear-gradient(
           90deg,
-          var(--card2) 25%,
-          rgba(201, 168, 76, 0.08) 50%,
-          var(--card2) 75%
+          rgba(36, 119, 91, 0.06) 25%,
+          rgba(36, 119, 91, 0.12) 50%,
+          rgba(36, 119, 91, 0.06) 75%
         );
         background-size: 200% 100%;
         animation: shimmer 1.5s infinite;
@@ -658,14 +582,14 @@
         }
       }
       .popup-box {
-        background: var(--card);
-        border: 1px solid rgba(201, 168, 76, 0.2);
+        background: var(--white);
+        border: 1px solid rgba(36, 119, 91, 0.15);
         border-radius: 20px;
         padding: 32px 28px;
         max-width: 360px;
         width: 90%;
         text-align: center;
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 12px 40px rgba(36, 119, 91, 0.15);
         animation: popIn 0.25s ease;
       }
       @keyframes popIn {
@@ -683,7 +607,7 @@
         margin-bottom: 12px;
       }
       .popup-title {
-        color: var(--gold);
+        color: var(--green);
         font-size: 1.15rem;
         font-weight: 700;
         margin-bottom: 8px;
@@ -695,8 +619,8 @@
         margin-bottom: 20px;
       }
       .popup-btn {
-        background: linear-gradient(135deg, #c9a84c, #f0d080);
-        color: var(--deep);
+        background: linear-gradient(135deg, var(--green), var(--green-light));
+        color: #fff;
         border: none;
         border-radius: 12px;
         padding: 12px 32px;
@@ -725,8 +649,8 @@
       input[type="password"] {
         width: 100%;
         padding: 14px 16px;
-        background: var(--card2);
-        border: 1px solid rgba(201, 168, 76, 0.2);
+        background: rgba(36, 119, 91, 0.04);
+        border: 1px solid rgba(36, 119, 91, 0.15);
         border-radius: 12px;
         color: var(--text);
         font-family: "Cairo", sans-serif;
@@ -737,8 +661,8 @@
         direction: rtl;
       }
       input:focus {
-        border-color: var(--gold);
-        box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(36, 119, 91, 0.1);
       }
       .hint {
         font-size: 0.75rem;
@@ -757,14 +681,19 @@
         transition: all 0.2s;
       }
       .btn-primary {
-        background: linear-gradient(135deg, #c9a84c, #f0d080, #c9a84c);
+        background: linear-gradient(
+          135deg,
+          var(--green),
+          var(--green-light),
+          var(--green)
+        );
         background-size: 200% 100%;
-        color: var(--deep);
-        box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3);
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(36, 119, 91, 0.3);
       }
       .btn-primary:hover {
         background-position: right center;
-        box-shadow: 0 6px 24px rgba(201, 168, 76, 0.5);
+        box-shadow: 0 6px 24px rgba(36, 119, 91, 0.4);
         transform: translateY(-1px);
       }
       .btn-primary:disabled {
@@ -781,15 +710,15 @@
       .question-progress {
         font-size: 0.8rem;
         color: var(--muted);
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.06);
         padding: 5px 12px;
         border-radius: 20px;
       }
       .question-category {
         font-size: 0.75rem;
-        color: var(--gold-dark);
-        background: rgba(201, 168, 76, 0.1);
-        border: 1px solid rgba(201, 168, 76, 0.2);
+        color: var(--green-dark);
+        background: rgba(36, 119, 91, 0.08);
+        border: 1px solid rgba(36, 119, 91, 0.15);
         padding: 4px 12px;
         border-radius: 20px;
       }
@@ -798,14 +727,14 @@
       }
       .timer-bar-bg {
         height: 6px;
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.1);
         border-radius: 3px;
         overflow: hidden;
         margin-bottom: 6px;
       }
       .timer-bar {
         height: 100%;
-        background: linear-gradient(90deg, var(--gold), var(--gold-light));
+        background: linear-gradient(90deg, var(--green), var(--green-light));
         border-radius: 3px;
         transition: width 1s linear;
       }
@@ -819,7 +748,7 @@
         text-align: center;
         font-size: 1.2rem;
         font-weight: 700;
-        color: var(--gold);
+        color: var(--green);
       }
       .timer-num.warning {
         color: #f39c12;
@@ -835,15 +764,15 @@
         margin-bottom: 24px;
         text-align: center;
         padding: 16px;
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.04);
         border-radius: 12px;
-        border-right: 3px solid var(--gold);
+        border-right: 3px solid var(--green);
       }
       .fill-blank-input {
         width: 100%;
         padding: 14px 18px;
-        background: var(--card2);
-        border: 1.5px solid rgba(201, 168, 76, 0.3);
+        background: rgba(36, 119, 91, 0.04);
+        border: 1.5px solid rgba(36, 119, 91, 0.2);
         border-radius: 12px;
         color: var(--text);
         font-family: "Cairo", sans-serif;
@@ -855,8 +784,8 @@
         margin-bottom: 12px;
       }
       .fill-blank-input:focus {
-        border-color: var(--gold);
-        box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(36, 119, 91, 0.12);
       }
       .fill-blank-input:disabled {
         opacity: 0.6;
@@ -867,8 +796,8 @@
         padding: 12px;
         border: none;
         border-radius: 12px;
-        background: linear-gradient(135deg, #c9a84c, #f0d080);
-        color: var(--deep);
+        background: linear-gradient(135deg, var(--green), var(--green-light));
+        color: #fff;
         font-family: "Cairo", sans-serif;
         font-size: 1rem;
         font-weight: 700;
@@ -891,8 +820,8 @@
       }
       .option {
         padding: 14px 18px;
-        background: var(--card2);
-        border: 1.5px solid rgba(201, 168, 76, 0.15);
+        background: rgba(36, 119, 91, 0.03);
+        border: 1.5px solid rgba(36, 119, 91, 0.12);
         border-radius: 12px;
         cursor: pointer;
         transition: all 0.2s;
@@ -903,13 +832,13 @@
         gap: 12px;
       }
       .option:hover {
-        border-color: var(--gold);
-        background: rgba(201, 168, 76, 0.05);
+        border-color: var(--green);
+        background: rgba(36, 119, 91, 0.06);
         transform: translateX(-2px);
       }
       .option.selected {
-        border-color: var(--gold);
-        background: rgba(201, 168, 76, 0.12);
+        border-color: var(--green);
+        background: rgba(36, 119, 91, 0.1);
       }
       .option.disabled {
         pointer-events: none;
@@ -918,18 +847,18 @@
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: rgba(201, 168, 76, 0.15);
+        background: rgba(36, 119, 91, 0.1);
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
         font-size: 0.85rem;
-        color: var(--gold);
+        color: var(--green);
         flex-shrink: 0;
       }
       .option.selected .option-letter {
-        background: var(--gold);
-        color: var(--deep);
+        background: var(--green);
+        color: #fff;
       }
       .answer-feedback {
         text-align: center;
@@ -949,21 +878,21 @@
         flex: 1;
         height: 4px;
         border-radius: 2px;
-        background: var(--card2);
+        background: rgba(36, 119, 91, 0.1);
         transition: background 0.3s;
       }
       .qpb-item.done-correct {
         background: var(--green);
       }
       .qpb-item.active {
-        background: var(--gold);
+        background: var(--green);
       }
       .divider {
         height: 1px;
         background: linear-gradient(
           90deg,
           transparent,
-          rgba(201, 168, 76, 0.3),
+          rgba(36, 119, 91, 0.2),
           transparent
         );
         margin: 20px 0;
@@ -975,9 +904,9 @@
         position: fixed;
         top: 20px;
         left: 50%;
-        transform: translateX(-50%) translateY(-60px);
-        background: var(--card2);
-        border: 1px solid rgba(201, 168, 76, 0.3);
+        transform: translateX(-50%) translateY(-80px);
+        background: var(--white);
+        border: 1px solid rgba(36, 119, 91, 0.2);
         padding: 12px 24px;
         border-radius: 30px;
         font-size: 0.9rem;
@@ -985,6 +914,7 @@
         z-index: 1000;
         transition: transform 0.3s ease;
         white-space: nowrap;
+        box-shadow: 0 4px 16px rgba(36, 119, 91, 0.1);
       }
       .toast.show {
         transform: translateX(-50%) translateY(0);
@@ -1008,6 +938,47 @@
     </style>
   </head>
   <body>
+    <!-- Islamic Geometric Pattern Background -->
+    <div class="pattern-bg">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <defs>
+          <pattern
+            id="islamic"
+            x="0"
+            y="0"
+            width="80"
+            height="80"
+            patternUnits="userSpaceOnUse"
+          >
+            <g fill="none" stroke="#ababab" stroke-width="0.7" opacity="0.35">
+              <polygon
+                points="40,8 47,25 62,18 55,33 72,40 55,47 62,62 47,55 40,72 33,55 18,62 25,47 8,40 25,33 18,18 33,25"
+              />
+              <polygon
+                points="40,16 52,28 64,40 52,52 40,64 28,52 16,40 28,28"
+              />
+              <polygon
+                points="40,28 43,36 51,36 45,41 47,49 40,44 33,49 35,41 29,36 37,36"
+              />
+              <path d="M2,2 Q2,14 14,14 Q2,14 2,26" />
+              <path d="M78,2 Q78,14 66,14 Q78,14 78,26" />
+              <path d="M2,78 Q2,66 14,66 Q2,66 2,54" />
+              <path d="M78,78 Q78,66 66,66 Q78,66 78,54" />
+              <circle cx="40" cy="8" r="1.5" fill="#ababab" />
+              <circle cx="72" cy="40" r="1.5" fill="#ababab" />
+              <circle cx="40" cy="72" r="1.5" fill="#ababab" />
+              <circle cx="8" cy="40" r="1.5" fill="#ababab" />
+              <circle cx="62" cy="18" r="1.5" fill="#ababab" />
+              <circle cx="62" cy="62" r="1.5" fill="#ababab" />
+              <circle cx="18" cy="62" r="1.5" fill="#ababab" />
+              <circle cx="18" cy="18" r="1.5" fill="#ababab" />
+            </g>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#islamic)" />
+      </svg>
+    </div>
+
     <div class="container">
       <div class="header">
         <div class="moon">
@@ -1123,7 +1094,7 @@
         <div class="card" style="margin-bottom: 14px; padding: 16px 18px">
           <h3
             style="
-              color: var(--gold);
+              color: var(--green);
               font-size: 0.95rem;
               margin-bottom: 10px;
               text-align: center;
@@ -1141,7 +1112,7 @@
             "
           >
             كل إجابة صحيحة تمنحك نقاطاً حسب
-            <strong style="color: var(--gold)">سرعتك</strong> في الإجابة!
+            <strong style="color: var(--green)">سرعتك</strong> في الإجابة!
           </p>
           <div
             style="
@@ -1179,7 +1150,7 @@
               "
             >
               <div
-                style="font-size: 1.1rem; font-weight: 900; color: var(--gold)"
+                style="font-size: 1.1rem; font-weight: 900; color: var(--green)"
               >
                 70
               </div>
@@ -1395,7 +1366,7 @@
         <div class="card" style="text-align: center; padding: 30px 0">
           <div style="font-size: 3.5rem; margin-bottom: 16px">🎉</div>
           <h2
-            style="color: var(--gold); margin-bottom: 12px; font-size: 1.4rem"
+            style="color: var(--green); margin-bottom: 12px; font-size: 1.4rem"
           >
             جزاك الله خيراً!
           </h2>
@@ -1414,7 +1385,7 @@
         <div class="card" id="summaryContainer" style="margin-top: 12px">
           <h3
             style="
-              color: var(--gold);
+              color: var(--green);
               font-size: 1rem;
               margin-bottom: 14px;
               text-align: center;
@@ -2217,7 +2188,7 @@
           const wrong = data.length - correct;
           const totalPts = data.reduce((s, a) => s + (a.points || 0), 0);
           statsEl.innerHTML = `
-            <div class="summary-stat"><span class="num" style="color:var(--gold)">${totalPts}</span><span class="lbl">مجموع النقاط</span></div>
+            <div class="summary-stat"><span class="num" style="color:var(--green)">${totalPts}</span><span class="lbl">مجموع النقاط</span></div>
             <div class="summary-stat"><span class="num green">${correct}</span><span class="lbl">صحيحة</span></div>
             <div class="summary-stat"><span class="num red">${wrong}</span><span class="lbl">خاطئة</span></div>
           `;
@@ -2240,7 +2211,7 @@
               html += `<div class="summary-q">${i + 1}. ${
                 a.question_text
               }</div>`;
-              html += `<div class="summary-row"><span class="summary-badge ${cls}">${badgeText}</span><span class="summary-your">إجابتك: ${yourAns}</span><span style="margin-right:auto;color:var(--gold);font-weight:700;font-size:0.8rem">+${pts}</span></div>`;
+              html += `<div class="summary-row"><span class="summary-badge ${cls}">${badgeText}</span><span class="summary-your">إجابتك: ${yourAns}</span><span style="margin-right:auto;color:var(--green);font-weight:700;font-size:0.8rem">+${pts}</span></div>`;
               if (!isCorrect) {
                 html += `<div class="summary-row"><span class="summary-correct-ans">✓ الإجابة الصحيحة: ${correctAns}</span></div>`;
               }

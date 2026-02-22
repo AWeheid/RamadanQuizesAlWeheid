@@ -857,6 +857,12 @@ app.mount(
 )
 
 
+# Serve competion.html at /competion
+@app.get("/competion")
+def serve_competion():
+    return FileResponse(os.path.join(PUBLIC_DIR, "competion.html"))
+
+
 # Serve admin.html at /admin
 @app.get("/admin")
 def serve_admin():

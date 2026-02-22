@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Rounded square background -->
+  <rect x="16" y="16" width="480" height="480" rx="96" ry="96" fill="#24775b"/>
+  <!-- Large crescent (هلال) -->
+  <circle cx="256" cy="240" r="110" fill="#ffffff"/>
+  <circle cx="290" cy="220" r="90" fill="#24775b"/>
+  <!-- Bottom text -->
+  <text x="256" y="440" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-weight="700" font-size="48" fill="#ffffff">مسابقة بذل</text>
+</svg>
