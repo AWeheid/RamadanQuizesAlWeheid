@@ -10,6 +10,7 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime, timedelta
 import os
+import random
 import bcrypt
 from dotenv import load_dotenv
 from pywebpush import webpush, WebPushException
@@ -61,13 +62,11 @@ def init_db():
     c.execute("""
         CREATE TABLE IF NOT EXISTS questions (
             id SERIAL PRIMARY KEY,
-            day INTEGER NOT NULL,
             question_type TEXT NOT NULL DEFAULT 'multiple_choice',
             question_text TEXT NOT NULL,
             options TEXT NOT NULL DEFAULT '[]',
             correct_answer TEXT NOT NULL,
-            category TEXT DEFAULT 'general',
-            order_num INTEGER DEFAULT 1
+            category TEXT DEFAULT 'general'
         )
     """)
     c.execute("""
@@ -129,6 +128,43 @@ def init_db():
             UNIQUE(participant_id, subscription_json)
         )
     """)
+    # Player quiz assignments for anti-cheat random question selection
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS player_quiz_assignments (
+            id SERIAL PRIMARY KEY,
+            participant_id INTEGER NOT NULL REFERENCES participants(id),
+            day INTEGER NOT NULL,
+            question_ids TEXT NOT NULL DEFAULT '[]',
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(participant_id, day)
+        )
+    """)
+    # Default questions_per_day setting (JSON: {"default": 6})
+    c.execute(
+        "INSERT INTO quiz_settings (key, value) VALUES ('questions_per_day', '{\"default\": 6}') ON CONFLICT (key) DO NOTHING"
+    )
+    # Migration: backfill player_quiz_assignments from existing answers BEFORE dropping day column
+    # This ensures Day 1 (and any prior day) players get their assignments preserved
+    c.execute("""
+        DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='questions' AND column_name='day') THEN
+                INSERT INTO player_quiz_assignments (participant_id, day, question_ids)
+                SELECT a.participant_id, q.day,
+                       json_agg(a.question_id ORDER BY a.question_id)::text
+                FROM answers a
+                JOIN questions q ON a.question_id = q.id
+                GROUP BY a.participant_id, q.day
+                ON CONFLICT (participant_id, day) DO NOTHING;
+            END IF;
+        END $$;
+    """)
+    # Migration: drop day and order_num columns from questions if they exist
+    c.execute("""
+        DO $$ BEGIN
+            ALTER TABLE questions DROP COLUMN IF EXISTS day;
+            ALTER TABLE questions DROP COLUMN IF EXISTS order_num;
+        END $$;
+    """)
     conn.commit()
     conn.close()
 
@@ -149,19 +185,18 @@ class LoginModel(BaseModel):
 
 
 class QuestionModel(BaseModel):
-    day: int
     question_type: str = "multiple_choice"
     question_text: str
     options: list[str] = []
     correct_answer: str
     category: str = "general"
-    order_num: int = 1
 
 
 class SettingsModel(BaseModel):
     quiz_open_time: Optional[str] = None
     quiz_close_time: Optional[str] = None
     current_day: Optional[int] = None
+    questions_per_day: Optional[int] = None
 
 
 # --- Helper ---
@@ -242,6 +277,11 @@ def get_status():
 
     is_open = quiz_open <= now <= quiz_close
 
+    # Get questions_per_day config
+    qpd_raw = get_setting("questions_per_day")
+    qpd_config = json.loads(qpd_raw) if qpd_raw else {"default": 6}
+    questions_today = qpd_config.get(str(current_day), qpd_config.get("default", 6))
+
     return {
         "current_day": current_day,
         "quiz_open_time": quiz_time,
@@ -249,6 +289,7 @@ def get_status():
         "is_open": is_open,
         "server_time": now.isoformat(),
         "total_days": 30,
+        "questions_per_day": questions_today,
     }
 
 
@@ -332,22 +373,92 @@ def login(data: LoginModel):
 
 
 @app.get("/api/questions/{day}")
-def get_questions(day: int):
-    """Get questions for a specific day (without correct answers)"""
+def get_questions(day: int, request: Request):
+    """Get randomized questions for a player on a given day (anti-cheat)"""
+    player = verify_player(request)
+    pid = player["participant_id"]
     conn = get_db()
     cur = conn.cursor()
+
+    # Check if player already has an assignment for this day
     cur.execute(
-        "SELECT id, question_type, question_text, options, category, order_num "
-        "FROM questions WHERE day=%s ORDER BY order_num",
-        (day,),
+        "SELECT question_ids FROM player_quiz_assignments WHERE participant_id=%s AND day=%s",
+        (pid, day),
     )
-    rows = cur.fetchall()
+    assignment = cur.fetchone()
+
+    if assignment:
+        # Return previously assigned questions in same order
+        qids = json.loads(assignment["question_ids"])
+    else:
+        # Get questions_per_day setting
+        cur.execute("SELECT value FROM quiz_settings WHERE key='questions_per_day'")
+        setting_row = cur.fetchone()
+        per_day_config = (
+            json.loads(setting_row["value"]) if setting_row else {"default": 6}
+        )
+        n = per_day_config.get(str(day), per_day_config.get("default", 6))
+
+        # Get all question IDs the player has already been assigned (any day)
+        cur.execute(
+            "SELECT question_ids FROM player_quiz_assignments WHERE participant_id=%s",
+            (pid,),
+        )
+        seen_ids = set()
+        for row in cur.fetchall():
+            seen_ids.update(json.loads(row["question_ids"]))
+
+        # Get all available question IDs not yet seen by this player
+        if seen_ids:
+            cur.execute(
+                "SELECT id FROM questions WHERE id != ALL(%s)",
+                (list(seen_ids),),
+            )
+        else:
+            cur.execute("SELECT id FROM questions")
+        available = [r["id"] for r in cur.fetchall()]
+
+        if not available:
+            conn.close()
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "exhausted": True,
+                    "message": "أجبت على جميع الأسئلة المتاحة! 🎉 مبروك",
+                },
+            )
+
+        # Pick min(n, available) random questions and shuffle
+        chosen = random.sample(available, min(n, len(available)))
+        random.shuffle(chosen)
+        qids = chosen
+
+        # Save assignment
+        cur.execute(
+            "INSERT INTO player_quiz_assignments (participant_id, day, question_ids) "
+            "VALUES (%s, %s, %s) ON CONFLICT (participant_id, day) DO NOTHING",
+            (pid, day, json.dumps(qids)),
+        )
+        conn.commit()
+
+    # Fetch the actual question data in assignment order
+    if not qids:
+        conn.close()
+        return []
+    cur.execute(
+        "SELECT id, question_type, question_text, options, category "
+        "FROM questions WHERE id = ANY(%s)",
+        (qids,),
+    )
+    rows_map = {r["id"]: dict(r) for r in cur.fetchall()}
     conn.close()
+
     result = []
-    for r in rows:
-        q = dict(r)
-        q["options"] = json.loads(q["options"])
-        result.append(q)
+    for qid in qids:
+        if qid in rows_map:
+            q = rows_map[qid]
+            q["options"] = json.loads(q["options"])
+            result.append(q)
     return result
 
 
@@ -440,11 +551,22 @@ def check_day(day: int, request: Request):
     pid = player["participant_id"]
     conn = get_db()
     cur = conn.cursor()
+    # Check if player has an assignment for this day and has answered any of those questions
     cur.execute(
-        "SELECT COUNT(*) as cnt FROM answers a "
-        "JOIN questions q ON a.question_id = q.id "
-        "WHERE a.participant_id=%s AND q.day=%s",
+        "SELECT question_ids FROM player_quiz_assignments WHERE participant_id=%s AND day=%s",
         (pid, day),
+    )
+    assignment = cur.fetchone()
+    if not assignment:
+        conn.close()
+        return {"answered": False, "count": 0}
+    qids = json.loads(assignment["question_ids"])
+    if not qids:
+        conn.close()
+        return {"answered": False, "count": 0}
+    cur.execute(
+        "SELECT COUNT(*) as cnt FROM answers WHERE participant_id=%s AND question_id = ANY(%s)",
+        (pid, qids),
     )
     row = cur.fetchone()
     conn.close()
@@ -458,27 +580,34 @@ def my_history(request: Request):
     pid = player["participant_id"]
     conn = get_db()
     cur = conn.cursor()
+    # Get all assignments for this player
     cur.execute(
-        """
-        SELECT q.day,
-               COUNT(a.id) as answered_count,
-               MIN(a.answered_at) as answered_at
-        FROM answers a
-        JOIN questions q ON a.question_id = q.id
-        WHERE a.participant_id = %s
-        GROUP BY q.day
-        ORDER BY q.day
-    """,
+        "SELECT day, question_ids, created_at FROM player_quiz_assignments "
+        "WHERE participant_id=%s ORDER BY day",
         (pid,),
     )
-    rows = cur.fetchall()
-    conn.close()
+    assignments = cur.fetchall()
     result = []
-    for r in rows:
-        d = dict(r)
-        if d.get("answered_at") and hasattr(d["answered_at"], "isoformat"):
-            d["answered_at"] = d["answered_at"].isoformat()
-        result.append(d)
+    for a in assignments:
+        qids = json.loads(a["question_ids"])
+        if not qids:
+            continue
+        # Count how many of those questions were answered
+        cur.execute(
+            "SELECT COUNT(*) as cnt FROM answers WHERE participant_id=%s AND question_id = ANY(%s)",
+            (pid, qids),
+        )
+        cnt = cur.fetchone()["cnt"]
+        if cnt > 0:
+            d = {
+                "day": a["day"],
+                "answered_count": cnt,
+                "answered_at": a["created_at"].isoformat()
+                if hasattr(a["created_at"], "isoformat")
+                else str(a["created_at"]),
+            }
+            result.append(d)
+    conn.close()
     return result
 
 
@@ -489,24 +618,38 @@ def my_answers(day: int, request: Request):
     pid = player["participant_id"]
     conn = get_db()
     cur = conn.cursor()
+    # Get the player's assignment for this day
     cur.execute(
-        """
-        SELECT q.id, q.question_text, q.question_type, q.options, q.category, q.order_num,
-               q.correct_answer, a.selected_answer, a.is_correct, a.time_taken, a.points
-        FROM answers a
-        JOIN questions q ON a.question_id = q.id
-        WHERE a.participant_id = %s AND q.day = %s
-        ORDER BY q.order_num
-    """,
+        "SELECT question_ids FROM player_quiz_assignments WHERE participant_id=%s AND day=%s",
         (pid, day),
     )
-    rows = cur.fetchall()
-    conn.close()
-    result = []
-    for r in rows:
+    assignment = cur.fetchone()
+    if not assignment:
+        conn.close()
+        return []
+    qids = json.loads(assignment["question_ids"])
+    if not qids:
+        conn.close()
+        return []
+    # Fetch questions and answers
+    cur.execute(
+        """
+        SELECT q.id, q.question_text, q.question_type, q.options, q.category,
+               q.correct_answer, a.selected_answer, a.is_correct, a.time_taken, a.points
+        FROM questions q
+        LEFT JOIN answers a ON a.question_id = q.id AND a.participant_id = %s
+        WHERE q.id = ANY(%s)
+    """,
+        (pid, qids),
+    )
+    rows_map = {}
+    for r in cur.fetchall():
         d = dict(r)
         d["options"] = json.loads(d["options"])
-        result.append(d)
+        rows_map[d["id"]] = d
+    conn.close()
+    # Return in assignment order
+    result = [rows_map[qid] for qid in qids if qid in rows_map]
     return result
 
 
@@ -585,6 +728,8 @@ def get_stats(request: Request):
         "SELECT COUNT(DISTINCT participant_id) as c FROM answers WHERE DATE(answered_at)=CURRENT_DATE"
     )
     today_participants = cur.fetchone()["c"]
+    cur.execute("SELECT COUNT(*) as c FROM questions")
+    total_questions = cur.fetchone()["c"]
     conn.close()
     return {
         "total_participants": total_participants,
@@ -594,6 +739,7 @@ def get_stats(request: Request):
         "accuracy_rate": round(
             (correct_answers / total_answers * 100) if total_answers else 0, 1
         ),
+        "total_questions": total_questions,
     }
 
 
@@ -617,16 +763,14 @@ def add_question(data: QuestionModel, request: Request):
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO questions (day, question_type, question_text, options, correct_answer, category, order_num) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
+        "INSERT INTO questions (question_type, question_text, options, correct_answer, category) "
+        "VALUES (%s, %s, %s, %s, %s) RETURNING id",
         (
-            data.day,
             data.question_type,
             data.question_text,
             json.dumps(data.options),
             data.correct_answer,
             data.category,
-            data.order_num,
         ),
     )
     qid = cur.fetchone()["id"]
@@ -635,12 +779,13 @@ def add_question(data: QuestionModel, request: Request):
     return {"id": qid, "message": "تم إضافة السؤال"}
 
 
-@app.get("/api/admin/questions/{day}")
-def admin_get_questions(day: int, request: Request):
+@app.get("/api/admin/questions")
+def admin_get_questions(request: Request):
+    """Get all questions in the bank"""
     verify_admin(request)
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM questions WHERE day=%s ORDER BY order_num", (day,))
+    cur.execute("SELECT * FROM questions ORDER BY id DESC")
     rows = cur.fetchall()
     conn.close()
     result = []
@@ -670,16 +815,14 @@ def update_question(question_id: int, data: QuestionModel, request: Request):
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
-        "UPDATE questions SET day=%s, question_type=%s, question_text=%s, options=%s, "
-        "correct_answer=%s, category=%s, order_num=%s WHERE id=%s",
+        "UPDATE questions SET question_type=%s, question_text=%s, options=%s, "
+        "correct_answer=%s, category=%s WHERE id=%s",
         (
-            data.day,
             data.question_type,
             data.question_text,
             json.dumps(data.options),
             data.correct_answer,
             data.category,
-            data.order_num,
             question_id,
         ),
     )
@@ -722,6 +865,22 @@ def update_settings(data: SettingsModel, request: Request):
             "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
             (str(data.current_day),),
         )
+    if data.questions_per_day is not None:
+        # Update the questions_per_day JSON: set count for current day
+        cur.execute("SELECT value FROM quiz_settings WHERE key='questions_per_day'")
+        row = cur.fetchone()
+        config = json.loads(row["value"]) if row else {"default": 6}
+        current_day = data.current_day
+        if current_day is None:
+            cur.execute("SELECT value FROM quiz_settings WHERE key='current_day'")
+            cd_row = cur.fetchone()
+            current_day = int(cd_row["value"]) if cd_row else 1
+        config[str(current_day)] = data.questions_per_day
+        cur.execute(
+            "INSERT INTO quiz_settings (key, value) VALUES ('questions_per_day', %s) "
+            "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+            (json.dumps(config),),
+        )
     conn.commit()
     conn.close()
     return {"message": "تم تحديث الإعدادات"}
@@ -751,12 +910,12 @@ def export_data(request: Request):
     cur = conn.cursor()
     cur.execute("""
         SELECT p.name, p.phone, p.created_at,
-               q.day, q.question_text, q.question_type, q.category,
-               a.selected_answer, q.correct_answer, a.is_correct, a.time_taken, a.answered_at
+               q.question_text, q.question_type, q.category,
+               a.selected_answer, q.correct_answer, a.is_correct, a.time_taken, a.points, a.answered_at
         FROM answers a
         JOIN participants p ON a.participant_id = p.id
         JOIN questions q ON a.question_id = q.id
-        ORDER BY p.name, q.day, q.order_num
+        ORDER BY p.name, a.answered_at
     """)
     rows = cur.fetchall()
     conn.close()

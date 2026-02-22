@@ -1999,8 +1999,19 @@
       /* --- Quiz --- */
       async function loadAndStartQuiz() {
         try {
-          const r = await fetch(`${API}/questions/${state.currentDay}`);
-          state.questions = await r.json();
+          const r = await fetch(`${API}/questions/${state.currentDay}`, {
+            credentials: "include",
+          });
+          const data = await r.json();
+          if (data.exhausted) {
+            showPopup(
+              "🎉",
+              "مبروك!",
+              data.message || "أجبت على جميع الأسئلة المتاحة!"
+            );
+            return;
+          }
+          state.questions = Array.isArray(data) ? data : [];
           if (!state.questions.length) {
             showToast("لا توجد أسئلة لهذا اليوم بعد", "error");
             return;

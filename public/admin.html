@@ -634,6 +634,10 @@
                 <div class="val" id="st-accuracy">-</div>
                 <div class="lbl">نسبة الإجابات الصحيحة</div>
               </div>
+              <div class="stat-card">
+                <div class="val" id="st-bank">-</div>
+                <div class="lbl">أسئلة في البنك</div>
+              </div>
             </div>
             <div class="table-wrap">
               <div class="table-header"><h3>🏆 أفضل ١٠ مشاركين</h3></div>
@@ -669,22 +673,12 @@
                   </select>
                 </div>
                 <div class="form-group" style="margin: 0">
-                  <label>اليوم</label>
-                  <select id="qDay"></select>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group" style="margin: 0">
                   <label>التصنيف</label>
                   <select id="qCat">
                     <option value="quran">📖 قرآن كريم</option>
                     <option value="ramadan">🌙 رمضان</option>
                     <option value="general">عام</option>
                   </select>
-                </div>
-                <div class="form-group" style="margin: 0">
-                  <label>الترتيب</label>
-                  <input type="number" id="qOrder" value="1" min="1" max="10" />
                 </div>
               </div>
               <div class="form-group">
@@ -757,8 +751,13 @@
             </div>
 
             <div class="section-card">
-              <div class="section-title">عرض أسئلة اليوم</div>
-              <div class="day-tabs" id="dayTabsQ"></div>
+              <div class="section-title">
+                بنك الأسئلة
+                <span
+                  id="bankCount"
+                  style="color: var(--muted); font-size: 0.85rem"
+                ></span>
+              </div>
               <div id="questionsList"></div>
             </div>
           </div>
@@ -839,6 +838,16 @@
                   <label>اليوم الحالي من رمضان</label>
                   <select id="settDay"></select>
                 </div>
+                <div class="form-group">
+                  <label>عدد أسئلة اليوم لكل متسابق</label>
+                  <input
+                    type="number"
+                    id="settQPerDay"
+                    value="6"
+                    min="1"
+                    max="20"
+                  />
+                </div>
                 <button
                   class="btn btn-gold"
                   onclick="saveSettings()"
@@ -890,13 +899,12 @@
     <script>
       const API = "/api";
       let ADMIN_TOKEN = "";
-      let selectedQDay = 1;
       let optionCount = 0;
       let editingQuestionId = null;
 
       // Populate day selects
       function populateDaySelects() {
-        ["qDay", "settDay"].forEach((id) => {
+        ["settDay"].forEach((id) => {
           const el = document.getElementById(id);
           if (!el) return;
           el.innerHTML = "";
@@ -945,13 +953,13 @@
         if (name === "overview") loadStats();
         if (name === "leaderboard") loadLeaderboard();
         if (name === "participants") loadParticipants();
-        if (name === "questions") initQuestionDays();
+        if (name === "questions") loadBankQuestions();
         if (name === "settings") loadCurrentSettings();
       }
 
       function initDashboard() {
         loadStats();
-        initQuestionDays();
+        loadBankQuestions();
         resetQuestionForm();
       }
 
@@ -1042,7 +1050,6 @@
         if (cancelBtn) cancelBtn.style.display = "none";
         document.getElementById("qType").value = "multiple_choice";
         document.getElementById("qText").value = "";
-        document.getElementById("qOrder").value = "1";
         document.getElementById("fbCorrect").value = "";
         document.getElementById("tfCorrect").value = "0";
         onQuestionTypeChange();
@@ -1060,6 +1067,7 @@
         document.getElementById("st-answers").textContent = d.total_answers;
         document.getElementById("st-accuracy").textContent =
           d.accuracy_rate + "%";
+        document.getElementById("st-bank").textContent = d.total_questions || 0;
 
         const lb = await fetch(`${API}/admin/leaderboard`, {
           headers: adminHeaders(),
@@ -1141,32 +1149,18 @@
       }
 
       // --- Questions ---
-      function initQuestionDays() {
-        const container = document.getElementById("dayTabsQ");
-        container.innerHTML = "";
-        for (let i = 1; i <= 30; i++) {
-          const tab = document.createElement("div");
-          tab.className = "day-tab" + (i === selectedQDay ? " active" : "");
-          tab.textContent = i;
-          tab.onclick = () => {
-            selectedQDay = i;
-            initQuestionDays();
-            loadDayQuestions(i);
-          };
-          container.appendChild(tab);
-        }
-        loadDayQuestions(selectedQDay);
-      }
-
-      async function loadDayQuestions(day) {
-        const r = await fetch(`${API}/admin/questions/${day}`, {
+      async function loadBankQuestions() {
+        const r = await fetch(`${API}/admin/questions`, {
           headers: adminHeaders(),
         });
         const data = await r.json();
         const container = document.getElementById("questionsList");
+        document.getElementById(
+          "bankCount"
+        ).textContent = `(${data.length} سؤال)`;
         if (!data.length) {
           container.innerHTML =
-            '<div class="empty-state"><div class="icon">📝</div><p>لا توجد أسئلة لهذا اليوم</p></div>';
+            '<div class="empty-state"><div class="icon">📝</div><p>لا توجد أسئلة في البنك بعد</p></div>';
           return;
         }
         const catMap = {
@@ -1267,9 +1261,7 @@
         document.getElementById("qCancelEditBtn").style.display = "";
 
         document.getElementById("qType").value = q.question_type;
-        document.getElementById("qDay").value = q.day;
         document.getElementById("qCat").value = q.category || "general";
-        document.getElementById("qOrder").value = q.order_num || 1;
         document.getElementById("qText").value = q.question_text;
 
         onQuestionTypeChange();
@@ -1351,13 +1343,11 @@
         }
 
         const data = {
-          day: parseInt(document.getElementById("qDay").value),
           question_type: type,
           question_text: questionText,
           options: options,
           correct_answer: correctAnswer,
           category: document.getElementById("qCat").value,
-          order_num: parseInt(document.getElementById("qOrder").value),
         };
 
         let r;
@@ -1377,8 +1367,7 @@
         if (r.ok) {
           const wasEditing = !!editingQuestionId;
           resetQuestionForm();
-          selectedQDay = data.day;
-          initQuestionDays();
+          loadBankQuestions();
           alert(
             wasEditing ? "✅ تم تعديل السؤال بنجاح" : "✅ تم إضافة السؤال بنجاح"
           );
@@ -1394,7 +1383,7 @@
           method: "DELETE",
           headers: adminHeaders(),
         });
-        if (r.ok) loadDayQuestions(selectedQDay);
+        if (r.ok) loadBankQuestions();
       }
 
       async function loadCurrentSettings() {
@@ -1408,6 +1397,9 @@
               data.quiz_close_time;
           if (data.current_day)
             document.getElementById("settDay").value = data.current_day;
+          if (data.questions_per_day)
+            document.getElementById("settQPerDay").value =
+              data.questions_per_day;
         } catch (e) {}
       }
 
@@ -1445,6 +1437,8 @@
           quiz_open_time: document.getElementById("settOpenTime").value,
           quiz_close_time: document.getElementById("settCloseTime").value,
           current_day: parseInt(document.getElementById("settDay").value),
+          questions_per_day:
+            parseInt(document.getElementById("settQPerDay").value) || 6,
         };
         const r = await fetch(`${API}/admin/settings`, {
           method: "PUT",
