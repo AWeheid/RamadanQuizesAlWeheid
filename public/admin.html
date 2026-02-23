@@ -848,6 +848,14 @@
                     max="20"
                   />
                 </div>
+                <div class="form-group">
+                  <label>تاريخ فتح المسابقة (اختياري)</label>
+                  <input type="datetime-local" id="settOpenDate" />
+                </div>
+                <div class="form-group">
+                  <label>تاريخ إغلاق المسابقة (اختياري)</label>
+                  <input type="datetime-local" id="settCloseDate" />
+                </div>
                 <button
                   class="btn btn-gold"
                   onclick="saveSettings()"
@@ -1400,6 +1408,18 @@
           if (data.questions_per_day)
             document.getElementById("settQPerDay").value =
               data.questions_per_day;
+          if (data.quiz_open_date) {
+            const openDate = new Date(data.quiz_open_date);
+            document.getElementById("settOpenDate").value = openDate
+              .toISOString()
+              .slice(0, 16);
+          }
+          if (data.quiz_close_date) {
+            const closeDate = new Date(data.quiz_close_date);
+            document.getElementById("settCloseDate").value = closeDate
+              .toISOString()
+              .slice(0, 16);
+          }
         } catch (e) {}
       }
 
@@ -1433,12 +1453,21 @@
       }
 
       async function saveSettings() {
+        const openDateVal = document.getElementById("settOpenDate").value;
+        const closeDateVal = document.getElementById("settCloseDate").value;
+
         const data = {
           quiz_open_time: document.getElementById("settOpenTime").value,
           quiz_close_time: document.getElementById("settCloseTime").value,
           current_day: parseInt(document.getElementById("settDay").value),
           questions_per_day:
             parseInt(document.getElementById("settQPerDay").value) || 6,
+          quiz_open_date: openDateVal
+            ? new Date(openDateVal).toISOString()
+            : "",
+          quiz_close_date: closeDateVal
+            ? new Date(closeDateVal).toISOString()
+            : "",
         };
         const r = await fetch(`${API}/admin/settings`, {
           method: "PUT",

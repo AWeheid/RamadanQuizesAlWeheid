@@ -7,3 +7,9 @@ __pycache__/
 venv/
 node_modules/
 .vercel/
+import_questions.py
+.gitignore
+islamic_mcq.json
+.gitignore
+main.py
+.gitignore

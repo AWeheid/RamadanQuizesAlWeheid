@@ -97,6 +97,12 @@ def init_db():
     c.execute(
         "INSERT INTO quiz_settings (key, value) VALUES ('quiz_close_time', '22:45') ON CONFLICT (key) DO NOTHING"
     )
+    c.execute(
+        "INSERT INTO quiz_settings (key, value) VALUES ('quiz_open_date', '') ON CONFLICT (key) DO NOTHING"
+    )
+    c.execute(
+        "INSERT INTO quiz_settings (key, value) VALUES ('quiz_close_date', '') ON CONFLICT (key) DO NOTHING"
+    )
     # Add password_hash column if it doesn't exist (migration for existing DBs)
     c.execute("""
         DO $$ BEGIN
@@ -197,6 +203,8 @@ class SettingsModel(BaseModel):
     quiz_close_time: Optional[str] = None
     current_day: Optional[int] = None
     questions_per_day: Optional[int] = None
+    quiz_open_date: Optional[str] = None
+    quiz_close_date: Optional[str] = None
 
 
 # --- Helper ---
@@ -266,16 +274,31 @@ def get_status():
     """Get current quiz status and countdown info"""
     current_day = int(get_setting("current_day") or 1)
     quiz_time = get_setting("quiz_open_time") or "21:00"
-
     close_time_str = get_setting("quiz_close_time") or "22:45"
+    open_date_str = get_setting("quiz_open_date") or ""
+    close_date_str = get_setting("quiz_close_date") or ""
 
     now = datetime.now()
+
+    # Parse time-based open/close
     hour, minute = map(int, quiz_time.split(":"))
     close_h, close_m = map(int, close_time_str.split(":"))
     quiz_open = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
     quiz_close = now.replace(hour=close_h, minute=close_m, second=0, microsecond=0)
 
+    # Check date-based open/close if configured
     is_open = quiz_open <= now <= quiz_close
+
+    if open_date_str or close_date_str:
+        # Date-based control takes precedence
+        if open_date_str:
+            open_dt = datetime.fromisoformat(open_date_str.replace("Z", "+00:00"))
+            if now < open_dt:
+                is_open = False
+        if close_date_str:
+            close_dt = datetime.fromisoformat(close_date_str.replace("Z", "+00:00"))
+            if now > close_dt:
+                is_open = False
 
     # Get questions_per_day config
     qpd_raw = get_setting("questions_per_day")
@@ -286,6 +309,8 @@ def get_status():
         "current_day": current_day,
         "quiz_open_time": quiz_time,
         "quiz_close_time": close_time_str,
+        "quiz_open_date": open_date_str,
+        "quiz_close_date": close_date_str,
         "is_open": is_open,
         "server_time": now.isoformat(),
         "total_days": 30,
@@ -743,6 +768,32 @@ def get_stats(request: Request):
     }
 
 
+@app.post("/api/admin/questions/bulk")
+def bulk_import_questions(request: Request, questions: list[QuestionModel]):
+    verify_admin(request)
+    conn = get_db()
+    cur = conn.cursor()
+    imported = 0
+    for q in questions:
+        if q.question_type == "true_false":
+            q.options = ["صح", "خطأ"]
+        cur.execute(
+            "INSERT INTO questions (question_type, question_text, options, correct_answer, category) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            (
+                q.question_type,
+                q.question_text,
+                json.dumps(q.options),
+                q.correct_answer,
+                q.category,
+            ),
+        )
+        imported += 1
+    conn.commit()
+    conn.close()
+    return {"imported": imported}
+
+
 @app.post("/api/admin/questions")
 def add_question(data: QuestionModel, request: Request):
     verify_admin(request)
@@ -880,6 +931,18 @@ def update_settings(data: SettingsModel, request: Request):
             "INSERT INTO quiz_settings (key, value) VALUES ('questions_per_day', %s) "
             "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
             (json.dumps(config),),
+        )
+    if data.quiz_open_date is not None:
+        cur.execute(
+            "INSERT INTO quiz_settings (key, value) VALUES ('quiz_open_date', %s) "
+            "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+            (data.quiz_open_date,),
+        )
+    if data.quiz_close_date is not None:
+        cur.execute(
+            "INSERT INTO quiz_settings (key, value) VALUES ('quiz_close_date', %s) "
+            "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+            (data.quiz_close_date,),
         )
     conn.commit()
     conn.close()
