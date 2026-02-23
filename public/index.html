@@ -1851,17 +1851,22 @@
           showToast("المسابقة غير متاحة حالياً، انتظر وقت الافتتاح", "error");
           return;
         }
+        // Show spinner immediately on click
+        const overlay = document.getElementById("quizLoadingOverlay");
+        if (overlay) overlay.classList.remove("hidden");
         try {
           const r = await fetch(`${API}/check-day/${state.currentDay}`, {
             credentials: "include",
           });
           if (r.status === 401) {
+            if (overlay) overlay.classList.add("hidden");
             doLogout();
             showToast("انتهت الجلسة، سجّل دخولك مجدداً", "error");
             return;
           }
           const data = await r.json();
           if (data.answered) {
+            if (overlay) overlay.classList.add("hidden");
             showPopup(
               "✅",
               "أجبت على أسئلة اليوم!",
@@ -1869,7 +1874,9 @@
             );
             return;
           }
-        } catch (e) {}
+        } catch (e) {
+          if (overlay) overlay.classList.add("hidden");
+        }
         await loadAndStartQuiz();
       }
 
