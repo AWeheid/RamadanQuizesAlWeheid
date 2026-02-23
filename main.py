@@ -44,6 +44,9 @@ PUBLIC_DIR = os.path.join(BASE_DIR, "public")
 # --- DB Setup ---
 def get_db():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+    # Set timezone to Riyadh (UTC+3)
+    cur = conn.cursor()
+    cur.execute("SET TIME ZONE 'Asia/Riyadh'")
     return conn
 
 
