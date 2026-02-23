@@ -1551,8 +1551,8 @@
           const data = await r.json();
           state.currentDay = data.current_day;
           state.quizOpen = data.is_open;
-          state.openTime = data.quiz_open_time;
-          state.closeTime = data.quiz_close_time || "22:45";
+          state.openDate = data.quiz_open_date || "";
+          state.closeDate = data.quiz_close_date || "";
           document.getElementById("dayBadge").textContent = `اليوم ${arabicDay(
             state.currentDay
           )} من رمضان`;
@@ -1732,25 +1732,33 @@
         }
       }
       function updateCountdownLabel() {
-        const [h, m] = state.openTime.split(":");
-        const ampm = parseInt(h) >= 12 ? "مساءً" : "صباحاً";
-        const h12 = parseInt(h) > 12 ? parseInt(h) - 12 : parseInt(h);
-        document.getElementById(
-          "countdownLabel"
-        ).textContent = `تفتح المسابقة الساعة ${h12}:${m} ${ampm}`;
+        if (state.openDate) {
+          const openDt = new Date(state.openDate);
+          const h = openDt.getHours();
+          const m = String(openDt.getMinutes()).padStart(2, "0");
+          const ampm = h >= 12 ? "مساءً" : "صباحاً";
+          const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+          document.getElementById(
+            "countdownLabel"
+          ).textContent = `تفتح المسابقة الساعة ${h12}:${m} ${ampm}`;
+        }
       }
       let countdownStarted = false;
       function tickCountdown() {
         const sk = document.getElementById("skelCountdown");
         const skelVisible = sk && !sk.classList.contains("hidden");
         const now = new Date();
-        const [h, m] = state.openTime.split(":");
-        const [ch, cm] = (state.closeTime || "22:45").split(":");
-        const openT = new Date();
-        openT.setHours(parseInt(h), parseInt(m), 0, 0);
-        const closeT = new Date();
-        closeT.setHours(parseInt(ch), parseInt(cm), 0, 0);
-        if (now >= openT && now <= closeT) {
+        const openDt = state.openDate ? new Date(state.openDate) : null;
+        const closeDt = state.closeDate ? new Date(state.closeDate) : null;
+        const isOpen =
+          openDt && closeDt
+            ? now >= openDt && now <= closeDt
+            : openDt
+            ? now >= openDt
+            : closeDt
+            ? now <= closeDt
+            : false;
+        if (isOpen) {
           state.quizOpen = true;
           document.getElementById("dashCountdown").classList.add("hidden");
           if (!skelVisible)
@@ -1761,10 +1769,9 @@
         if (!skelVisible)
           document.getElementById("dashCountdown").classList.remove("hidden");
         document.getElementById("dashOpenBadge").classList.add("hidden");
-        let nextOpen = new Date();
-        nextOpen.setHours(parseInt(h), parseInt(m), 0, 0);
-        if (now >= nextOpen) nextOpen.setDate(nextOpen.getDate() + 1);
-        const diff = nextOpen - now;
+        // Countdown to open date if it's in the future, otherwise show zeros
+        const nextOpen = openDt && openDt > now ? openDt : null;
+        const diff = nextOpen ? nextOpen - now : 0;
         document.getElementById("cdHours").textContent = pad(
           Math.floor(diff / 3600000)
         );

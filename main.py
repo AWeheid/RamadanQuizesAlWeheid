@@ -276,32 +276,29 @@ def get_setting(key: str):
 def get_status():
     """Get current quiz status and countdown info"""
     current_day = int(get_setting("current_day") or 1)
-    quiz_time = get_setting("quiz_open_time") or "21:00"
-    close_time_str = get_setting("quiz_close_time") or "22:45"
     open_date_str = get_setting("quiz_open_date") or ""
     close_date_str = get_setting("quiz_close_date") or ""
 
     now = datetime.now()
 
-    # Parse time-based open/close
-    hour, minute = map(int, quiz_time.split(":"))
-    close_h, close_m = map(int, close_time_str.split(":"))
-    quiz_open = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
-    quiz_close = now.replace(hour=close_h, minute=close_m, second=0, microsecond=0)
+    # Date+time based control
+    is_open = True
+    if open_date_str:
+        open_dt = datetime.fromisoformat(
+            open_date_str.replace("Z", "").replace("+00:00", "")
+        )
+        if now < open_dt:
+            is_open = False
+    if close_date_str:
+        close_dt = datetime.fromisoformat(
+            close_date_str.replace("Z", "").replace("+00:00", "")
+        )
+        if now > close_dt:
+            is_open = False
 
-    # Check date-based open/close if configured
-    is_open = quiz_open <= now <= quiz_close
-
-    if open_date_str or close_date_str:
-        # Date-based control takes precedence
-        if open_date_str:
-            open_dt = datetime.fromisoformat(open_date_str.replace("Z", "+00:00"))
-            if now < open_dt:
-                is_open = False
-        if close_date_str:
-            close_dt = datetime.fromisoformat(close_date_str.replace("Z", "+00:00"))
-            if now > close_dt:
-                is_open = False
+    # If neither date is set, quiz is closed by default until admin configures it
+    if not open_date_str and not close_date_str:
+        is_open = False
 
     # Get questions_per_day config
     qpd_raw = get_setting("questions_per_day")
@@ -310,8 +307,6 @@ def get_status():
 
     return {
         "current_day": current_day,
-        "quiz_open_time": quiz_time,
-        "quiz_close_time": close_time_str,
         "quiz_open_date": open_date_str,
         "quiz_close_date": close_date_str,
         "is_open": is_open,
