@@ -552,6 +552,24 @@ def get_me(request: Request):
     return {"participant_id": player["participant_id"], "name": player["name"]}
 
 
+@app.get("/api/my-rank")
+def get_my_rank(request: Request):
+    """Get current player's total score, rank, and days played"""
+    player = verify_player(request)
+    pid = player["participant_id"]
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT COALESCE(SUM(points), 0) as total_points FROM answers WHERE participant_id=%s",
+        (pid,),
+    )
+    row = cur.fetchone()
+    conn.close()
+    return {
+        "total_points": row["total_points"] if row else 0,
+    }
+
+
 @app.post("/api/logout")
 def logout(request: Request):
     """Clear session cookie and delete session from DB"""
@@ -677,12 +695,30 @@ def my_answers(day: int, request: Request):
 
 
 @app.get("/api/leaderboard")
-def public_leaderboard():
-    """Public leaderboard - anonymous (no names), top 10 by points"""
+def public_leaderboard(request: Request):
+    """Public leaderboard - anonymous (no names), top 10 by points + player's own row"""
+    # Try to identify the current player (optional, don't fail if not logged in)
+    player_id = None
+    try:
+        session_id = request.cookies.get("session_id", "")
+        if session_id:
+            conn_s = get_db()
+            cur_s = conn_s.cursor()
+            cur_s.execute(
+                "SELECT participant_id FROM sessions WHERE id=%s AND expires_at > NOW()",
+                (session_id,),
+            )
+            row_s = cur_s.fetchone()
+            conn_s.close()
+            if row_s:
+                player_id = row_s["participant_id"]
+    except Exception:
+        pass
+
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
-        SELECT
+        SELECT p.id,
             COALESCE(SUM(a.points), 0) as points,
             COUNT(a.id) as total_answered
         FROM participants p
@@ -690,20 +726,25 @@ def public_leaderboard():
         GROUP BY p.id
         HAVING COUNT(a.id) > 0
         ORDER BY points DESC, total_answered DESC
-        LIMIT 10
     """)
     rows = cur.fetchall()
     conn.close()
-    result = []
+
+    top10 = []
+    my_row = None
     for i, r in enumerate(rows):
-        result.append(
-            {
-                "rank": i + 1,
-                "points": r["points"],
-                "total_answered": r["total_answered"],
-            }
-        )
-    return result
+        entry = {
+            "rank": i + 1,
+            "points": r["points"],
+            "total_answered": r["total_answered"],
+            "is_me": r["id"] == player_id,
+        }
+        if i < 10:
+            top10.append(entry)
+        if r["id"] == player_id:
+            my_row = entry
+
+    return {"leaderboard": top10, "my_row": my_row}
 
 
 # --- Admin Routes ---

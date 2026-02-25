@@ -318,6 +318,21 @@
           rgba(36, 119, 91, 0.02)
         );
       }
+      .lb-row.is-me {
+        border-color: var(--gold);
+        background: rgba(212, 175, 55, 0.1);
+        box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+      }
+      .lb-row.is-me .lb-rank {
+        color: var(--gold);
+      }
+      .lb-separator {
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.8rem;
+        padding: 6px 0;
+        letter-spacing: 2px;
+      }
       .lb-rank {
         font-weight: 900;
         font-size: 1.1rem;
@@ -1132,6 +1147,60 @@
             <span>المسابقة متاحة الآن!</span>
           </div>
         </div>
+        <!-- Player Score Card Skeleton -->
+        <div
+          class="card"
+          id="skelScore"
+          style="margin-bottom: 14px; padding: 18px; text-align: center"
+        >
+          <div
+            class="skeleton"
+            style="
+              width: 80px;
+              height: 14px;
+              border-radius: 6px;
+              margin: 0 auto 10px;
+            "
+          ></div>
+          <div
+            class="skeleton"
+            style="
+              width: 60px;
+              height: 28px;
+              border-radius: 8px;
+              margin: 0 auto 6px;
+            "
+          ></div>
+          <div
+            class="skeleton"
+            style="
+              width: 40px;
+              height: 12px;
+              border-radius: 6px;
+              margin: 0 auto;
+            "
+          ></div>
+        </div>
+        <!-- Player Score Card -->
+        <div
+          class="card hidden"
+          id="myRankCard"
+          style="margin-bottom: 14px; padding: 18px; text-align: center"
+        >
+          <div
+            style="font-size: 0.85rem; color: var(--muted); margin-bottom: 6px"
+          >
+            مجموع نقاطك
+          </div>
+          <div
+            style="font-size: 2rem; font-weight: 900; color: var(--gold)"
+            id="myRankPoints"
+          >
+            0
+          </div>
+          <div style="font-size: 0.75rem; color: var(--muted)">نقطة</div>
+        </div>
+
         <div class="card" style="margin-bottom: 14px; padding: 16px 18px">
           <h3
             style="
@@ -1747,6 +1816,23 @@
         wn.classList.remove("hidden");
         startCountdown();
         initPushNotifications();
+        fetchMyRank();
+      }
+
+      async function fetchMyRank() {
+        const skel = document.getElementById("skelScore");
+        const card = document.getElementById("myRankCard");
+        try {
+          const r = await fetch(`${API}/my-rank`, { credentials: "include" });
+          if (!r.ok) return;
+          const data = await r.json();
+          document.getElementById("myRankPoints").textContent =
+            data.total_points || 0;
+          skel.classList.add("hidden");
+          card.classList.remove("hidden");
+        } catch (e) {
+          skel.classList.add("hidden");
+        }
       }
 
       async function initPushNotifications() {
@@ -1887,11 +1973,15 @@
         document.getElementById("lbPageList").innerHTML = "";
         document.getElementById("lbEmpty").classList.add("hidden");
         try {
-          const r = await fetch(`${API}/leaderboard`);
-          const data = await r.json();
+          const r = await fetch(`${API}/leaderboard`, {
+            credentials: "include",
+          });
+          const res = await r.json();
           sk.classList.add("hidden");
           const list = document.getElementById("lbPageList");
           const empty = document.getElementById("lbEmpty");
+          const data = res.leaderboard || [];
+          const myRow = res.my_row;
           if (!data.length) {
             list.innerHTML = "";
             empty.classList.remove("hidden");
@@ -1899,13 +1989,27 @@
           }
           empty.classList.add("hidden");
           const medals = ["🥇", "🥈", "🥉"];
-          list.innerHTML = data
+          // Check if player is already in top 10
+          const meInTop = data.some((item) => item.is_me);
+          let html = data
             .map((item) => {
               const medal = item.rank <= 3 ? medals[item.rank - 1] : item.rank;
               const tc = item.rank <= 3 ? " top-3" : "";
-              return `<div class="lb-row${tc}"><div class="lb-rank">${medal}</div><div class="lb-points">${item.points} <span>نقطة</span></div></div>`;
+              const me = item.is_me ? " is-me" : "";
+              const label = item.is_me
+                ? ' <span style="font-size:0.75rem;color:var(--gold)">(أنت)</span>'
+                : "";
+              return `<div class="lb-row${tc}${me}"><div class="lb-rank">${medal}</div><div class="lb-points">${item.points} <span>نقطة</span>${label}</div></div>`;
             })
             .join("");
+          // If player not in top 10, show their row below with a separator
+          if (!meInTop && myRow) {
+            const myMedal =
+              myRow.rank <= 3 ? medals[myRow.rank - 1] : myRow.rank;
+            html += `<div class="lb-separator">• • •</div>`;
+            html += `<div class="lb-row is-me"><div class="lb-rank">${myMedal}</div><div class="lb-points">${myRow.points} <span>نقطة</span> <span style="font-size:0.75rem;color:var(--gold)">(أنت)</span></div></div>`;
+          }
+          list.innerHTML = html;
         } catch (e) {
           sk.classList.add("hidden");
           showToast("تعذّر تحميل المتصدرين", "error");
