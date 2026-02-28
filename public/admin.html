@@ -603,6 +603,9 @@
           <div class="nav-item" onclick="showPage('participants')">
             <span class="nav-icon">👥</span> المشاركون
           </div>
+          <div class="nav-item" onclick="showPage('winners')">
+            <span class="nav-icon">🥇</span> الفائزون
+          </div>
           <div class="nav-item" onclick="showPage('settings')">
             <span class="nav-icon">⚙️</span> الإعدادات
           </div>
@@ -818,6 +821,23 @@
             </div>
           </div>
 
+          <!-- Winners -->
+          <div id="page-winners" class="page">
+            <h2 style="color: var(--green); margin-bottom: 20px">
+              الفائزون 🥇
+            </h2>
+            <div
+              id="adminWinnersContent"
+              style="display: flex; flex-direction: column; gap: 16px"
+            >
+              <p
+                style="text-align: center; color: var(--muted); padding: 30px 0"
+              >
+                جاري التحميل...
+              </p>
+            </div>
+          </div>
+
           <!-- Settings -->
           <div id="page-settings" class="page">
             <h2 style="color: var(--green); margin-bottom: 20px">
@@ -841,6 +861,14 @@
                   />
                 </div>
                 <div class="form-group">
+                  <label>الجولة الحالية</label>
+                  <select id="settRound">
+                    <option value="1">الجولة 1</option>
+                    <option value="2">الجولة 2</option>
+                    <option value="3">الجولة 3</option>
+                  </select>
+                </div>
+                <div class="form-group">
                   <label>تاريخ وقت فتح المسابقة</label>
                   <input type="datetime-local" id="settOpenDate" />
                 </div>
@@ -855,6 +883,35 @@
                 >
                   حفظ الإعدادات
                 </button>
+              </div>
+            </div>
+
+            <div class="section-card" style="margin-top: 20px">
+              <div class="section-title">🏁 إنهاء الجولة الحالية</div>
+              <p
+                style="
+                  font-size: 0.85rem;
+                  color: var(--muted);
+                  margin-bottom: 12px;
+                "
+              >
+                يحفظ أفضل 3 متسابقين كفائزين للجولة الحالية، ثم يصفّر النقاط
+                وينتقل للجولة التالية.<br />
+                <strong style="color: var(--red)">تنبيه:</strong> لا يمكن
+                التراجع عن هذا الإجراء!
+              </p>
+              <div style="display: flex; align-items: center; gap: 12px">
+                <button
+                  class="btn"
+                  style="background: var(--red); color: #fff"
+                  onclick="endCurrentRound()"
+                >
+                  🏁 إنهاء الجولة وحفظ الفائزين
+                </button>
+                <span
+                  id="endRoundResult"
+                  style="font-size: 0.85rem; color: var(--muted)"
+                ></span>
               </div>
             </div>
 
@@ -955,6 +1012,7 @@
         if (name === "participants") loadParticipants();
         if (name === "questions") loadBankQuestions();
         if (name === "settings") loadCurrentSettings();
+        if (name === "winners") loadAdminWinners();
       }
 
       function initDashboard() {
@@ -1414,6 +1472,9 @@
               .toISOString()
               .slice(0, 16);
           }
+          if (data.current_round) {
+            document.getElementById("settRound").value = data.current_round;
+          }
         } catch (e) {}
       }
 
@@ -1460,6 +1521,7 @@
           quiz_close_date: closeDateVal
             ? new Date(closeDateVal).toISOString()
             : "",
+          current_round: parseInt(document.getElementById("settRound").value),
         };
         const r = await fetch(`${API}/admin/settings`, {
           method: "PUT",
@@ -1497,6 +1559,79 @@
         }.csv`;
         a.click();
         URL.revokeObjectURL(url);
+      }
+      const roundNames = {
+        1: "الجولة الأولى",
+        2: "الجولة الثانية",
+        3: "الجولة الثالثة",
+      };
+      const rankMedals = ["🥇", "🥈", "🥉"];
+
+      async function loadAdminWinners() {
+        const container = document.getElementById("adminWinnersContent");
+        try {
+          const r = await fetch(`${API}/admin/winners`, {
+            headers: adminHeaders(),
+          });
+          const data = await r.json();
+          if (!Object.keys(data).length) {
+            container.innerHTML =
+              '<p style="text-align:center;color:var(--muted);padding:30px 0">لا يوجد فائزون بعد</p>';
+            return;
+          }
+          let html = "";
+          for (let round = 1; round <= 3; round++) {
+            const rd = String(round);
+            html += `<div class="section-card">`;
+            html += `<div class="section-title">${rankMedals[0]} ${
+              roundNames[rd] || "الجولة " + rd
+            }</div>`;
+            if (data[rd] && data[rd].length) {
+              html += `<table class="data-table"><thead><tr><th>الترتيب</th><th>الاسم</th><th>الجوال</th><th>النقاط</th></tr></thead><tbody>`;
+              data[rd].forEach((w) => {
+                const medal = w.rank <= 3 ? rankMedals[w.rank - 1] : w.rank;
+                html += `<tr><td>${medal}</td><td>${w.name}</td><td>${w.phone}</td><td><strong>${w.total_points}</strong></td></tr>`;
+              });
+              html += `</tbody></table>`;
+            } else {
+              html += `<p style="text-align:center;color:var(--muted);padding:16px 0">لم تُحدد بعد</p>`;
+            }
+            html += `</div>`;
+          }
+          container.innerHTML = html;
+        } catch (e) {
+          container.innerHTML =
+            '<p style="text-align:center;color:var(--red);padding:30px 0">خطأ في تحميل الفائزين</p>';
+        }
+      }
+
+      async function endCurrentRound() {
+        const result = document.getElementById("endRoundResult");
+        if (
+          !confirm(
+            "⚠️ هل أنت متأكد؟\nسيتم حفظ أفضل 3 فائزين وتصفير جميع النقاط والانتقال للجولة التالية.\nلا يمكن التراجع!"
+          )
+        )
+          return;
+        try {
+          const r = await fetch(`${API}/admin/end-round`, {
+            method: "POST",
+            headers: adminHeaders(),
+          });
+          const data = await r.json();
+          if (r.ok) {
+            result.style.color = "var(--green)";
+            result.textContent = `✅ ${data.message}`;
+            // Update round selector
+            document.getElementById("settRound").value = data.next_round;
+          } else {
+            result.style.color = "var(--red)";
+            result.textContent = `❌ ${data.detail || "حدث خطأ"}`;
+          }
+        } catch (e) {
+          result.style.color = "var(--red)";
+          result.textContent = "❌ خطأ في الاتصال";
+        }
       }
     </script>
   </body>

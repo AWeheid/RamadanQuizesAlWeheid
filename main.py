@@ -174,6 +174,22 @@ def init_db():
             ALTER TABLE questions DROP COLUMN IF EXISTS order_num;
         END $$;
     """)
+    # Winners table for round results
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS winners (
+            id SERIAL PRIMARY KEY,
+            round INTEGER NOT NULL,
+            rank INTEGER NOT NULL,
+            participant_id INTEGER NOT NULL REFERENCES participants(id),
+            total_points INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(round, rank)
+        )
+    """)
+    # Default current_round setting
+    c.execute(
+        "INSERT INTO quiz_settings (key, value) VALUES ('current_round', '1') ON CONFLICT (key) DO NOTHING"
+    )
     conn.commit()
     conn.close()
 
@@ -208,6 +224,7 @@ class SettingsModel(BaseModel):
     questions_per_day: Optional[int] = None
     quiz_open_date: Optional[str] = None
     quiz_close_date: Optional[str] = None
+    current_round: Optional[int] = None
 
 
 # --- Helper ---
@@ -305,6 +322,8 @@ def get_status():
     qpd_config = json.loads(qpd_raw) if qpd_raw else {"default": 6}
     questions_today = qpd_config.get(str(current_day), qpd_config.get("default", 6))
 
+    current_round = int(get_setting("current_round") or 1)
+
     return {
         "current_day": current_day,
         "quiz_open_date": open_date_str,
@@ -313,6 +332,7 @@ def get_status():
         "server_time": now.isoformat(),
         "total_days": 30,
         "questions_per_day": questions_today,
+        "current_round": current_round,
     }
 
 
@@ -983,9 +1003,122 @@ def update_settings(data: SettingsModel, request: Request):
             "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
             (data.quiz_close_date,),
         )
+    if data.current_round is not None:
+        cur.execute(
+            "INSERT INTO quiz_settings (key, value) VALUES ('current_round', %s) "
+            "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+            (str(data.current_round),),
+        )
     conn.commit()
     conn.close()
     return {"message": "تم تحديث الإعدادات"}
+
+
+@app.post("/api/admin/end-round")
+def end_round(request: Request):
+    """Capture top 3 winners for current round, reset scores but keep answered questions"""
+    verify_admin(request)
+    current_round = int(get_setting("current_round") or 1)
+    conn = get_db()
+    cur = conn.cursor()
+    # Check if this round already has winners
+    cur.execute("SELECT COUNT(*) as cnt FROM winners WHERE round=%s", (current_round,))
+    if cur.fetchone()["cnt"] > 0:
+        conn.close()
+        raise HTTPException(
+            status_code=400, detail=f"الجولة {current_round} لديها فائزون بالفعل"
+        )
+    # Get top 3 players by total points
+    cur.execute("""
+        SELECT p.id, COALESCE(SUM(a.points), 0) as total_points
+        FROM participants p
+        JOIN answers a ON p.id = a.participant_id
+        GROUP BY p.id
+        ORDER BY total_points DESC
+        LIMIT 3
+    """)
+    top3 = cur.fetchall()
+    if not top3:
+        conn.close()
+        raise HTTPException(status_code=400, detail="لا توجد نتائج لإنهاء الجولة")
+    # Save winners
+    for i, row in enumerate(top3):
+        cur.execute(
+            "INSERT INTO winners (round, rank, participant_id, total_points) VALUES (%s, %s, %s, %s)",
+            (current_round, i + 1, row["id"], row["total_points"]),
+        )
+    # Reset scores: delete all points from answers but keep the answer records
+    # so questions won't be re-assigned in next rounds
+    cur.execute("UPDATE answers SET points = 0")
+    # Advance to next round
+    next_round = current_round + 1
+    cur.execute(
+        "INSERT INTO quiz_settings (key, value) VALUES ('current_round', %s) "
+        "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+        (str(next_round),),
+    )
+    conn.commit()
+    conn.close()
+    winners = [
+        {"rank": i + 1, "participant_id": r["id"], "total_points": r["total_points"]}
+        for i, r in enumerate(top3)
+    ]
+    return {
+        "message": f"تم إنهاء الجولة {current_round} وحفظ الفائزين",
+        "winners": winners,
+        "next_round": next_round,
+    }
+
+
+@app.get("/api/winners")
+def get_public_winners():
+    """Public winners - scores only, no names"""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT w.round, w.rank, w.total_points
+        FROM winners w
+        ORDER BY w.round, w.rank
+    """)
+    rows = cur.fetchall()
+    conn.close()
+    result = {}
+    for r in rows:
+        rd = str(r["round"])
+        if rd not in result:
+            result[rd] = []
+        result[rd].append({"rank": r["rank"], "total_points": r["total_points"]})
+    return result
+
+
+@app.get("/api/admin/winners")
+def get_admin_winners(request: Request):
+    """Admin winners - includes names and phones"""
+    verify_admin(request)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT w.round, w.rank, w.total_points, p.name, p.phone
+        FROM winners w
+        JOIN participants p ON w.participant_id = p.id
+        ORDER BY w.round, w.rank
+    """)
+    rows = cur.fetchall()
+    conn.close()
+    result = {}
+    for r in rows:
+        rd = str(r["round"])
+        if rd not in result:
+            result[rd] = []
+        result[rd].append(
+            {
+                "rank": r["rank"],
+                "total_points": r["total_points"],
+                "name": r["name"],
+                "phone": r["phone"],
+            }
+        )
+    return result
 
 
 @app.get("/api/admin/participants")
